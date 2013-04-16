@@ -1,0 +1,9 @@
+<?php
+
+/**
+ * Implements hook_uninstall().
+ */
+function representative_image_uninstall() {
+  variable_del('representative_image_default');
+  variable_del('representative_image_fields');
+}
