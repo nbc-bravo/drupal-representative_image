@@ -99,6 +99,7 @@ function representative_image_tokens($type, $tokens, array $data = array(), arra
  *   or an empty string if nothing could be found.
  */
 function representative_image($node) {
+  $r = '';
   if (isset($node->type) && representative_image_get_field($node->type)) {
     $field_items = field_get_items('node', $node, 'field_bandeau_publicitaire');
     if(is_array($field_items) && count($field_items) && isset($field_items[0]['uri'])) {
