@@ -12,10 +12,10 @@ require_once 'representative_image_views_handler_field.inc';
  *
  * @ingroup views_field_handlers
  */
-class representative_image_views_handler_field_representative_image extends representative_image_views_handler_field {
+class representative_image_views_handler_field_revision_representative_image extends representative_image_views_handler_field {
 
   function render($values) {
-    $node = node_load($values->nid);
+    $node = node_load(NULL, $values->vid);
     $output = parent::render($values, $node);
     return $output;
   }
