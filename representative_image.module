@@ -104,6 +104,16 @@ function representative_image_features_pipe_alter(&$pipe, $data, $export) {
 }
 
 /**
+ * Implements hook_views_api().
+ */
+function representative_image_views_api() {
+  return array(
+    'api' => 3,
+    'path' => drupal_get_path('module', 'representative_image'),
+  );
+}
+
+/**
  * Given a node object, returns a representative image as an absolute URL.
  *
  * If anything goes wrong, returns the value of the variable.

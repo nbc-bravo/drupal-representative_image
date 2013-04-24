@@ -1,3 +1,5 @@
 name = Representative Image
 description = Allows you to define a representative image per node type and make it available in a token
 core = 7.x
+
+files[] = handlers/representative_image_views_handler_field_representative_image.inc
