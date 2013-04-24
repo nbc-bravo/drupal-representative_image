@@ -11,13 +11,19 @@
  */
 function representative_image_form_node_type_form_alter(&$form, &$form_state) {
   if (isset($form['#node_type']->type)) {
-    $type = $form['#node_type']->type;
+    $bundle = $form['#node_type']->type;
   }
   else {
     return;
   }
 
-  $options = representative_image_available_fields($type);
+  $type = 'node';
+  $form_state['representative_image'] = array(
+    'entity_type' => $type,
+    'bundle' => $bundle,
+  );
+
+  $options = representative_image_available_fields($type, $bundle);
   $form['representative_image_fieldset'] = array(
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
@@ -28,7 +34,7 @@ function representative_image_form_node_type_form_alter(&$form, &$form_state) {
       '#options' => $options,
       '#empty_option' => t('None'),
       '#empty_value' => 0,
-      '#default_value' => _representative_image_get_field_key($type),
+      '#default_value' => representative_image_get_field($type, $bundle),
     ),
   );
 
@@ -45,7 +51,11 @@ function representative_image_form_node_type_form_alter(&$form, &$form_state) {
  * Submit handler for the node type form.
  */
 function representative_image_content_type_form_submit_handler($form, &$form_state) {
-  representative_image_set_field($type, $field);
+  $info = $form_state['representative_image'];
+  if (isset($info['entity_type']) && isset($info['bundle'])) {
+    $field = $form_state['values']['representative_image'];
+    representative_image_set_field($info['entity_type'], $info['bundle'], $field);
+  }
 }
 
 /**
@@ -74,12 +84,23 @@ function representative_image_tokens($type, $tokens, array $data = array(), arra
     foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'representative_image':
-          $replacements[$original] = representative_image($node);
+          $replacements[$original] = representative_image($node, $type);
           break;
       }
     }
   }
   return $replacements;
+}
+
+/**
+ * Implements hook_features_pipe_alter().
+ */
+function representative_image_features_pipe_alter(&$pipe, $data, $export) {
+  if (module_exists('strongarm') && $export['component'] == 'node') {
+    foreach ($data as $content_type) {
+      $pipe['variable'][] = 'representative_image_field_node_' . $content_type;
+    }
+  }
 }
 
 /**
@@ -94,12 +115,12 @@ function representative_image_tokens($type, $tokens, array $data = array(), arra
  *   A string with a representative image as a fully formed absolute URL or an
  *   empty string if nothing could be found.
  */
-function representative_image($node) {
+function representative_image($entity, $type) {
   $image = '';
 
-  if (isset($node->type)) {
-    if ($field = representative_image_get_field($node->type)) {
-      $field_items = field_get_items('node', $node, $field);
+  if ($bundle = field_extract_bundle($type, $entity)) {
+    if ($field = representative_image_get_field($type, $bundle)) {
+      $field_items = field_get_items($type, $entity, $field);
       if(is_array($field_items) && count($field_items) && isset($field_items[0]['uri'])) {
         $r = file_create_url($field_items[0]['uri']);
       }
@@ -119,10 +140,10 @@ function representative_image($node) {
 /**
  * Given a node type machine name, returns available image fields.
  */
-function representative_image_available_fields($type) {
+function representative_image_available_fields($type, $bundle) {
   $fields = array();
 
-  foreach (field_info_instances('node', $type) as $name => $info) {
+  foreach (field_info_instances($type, $bundle) as $name => $info) {
     $supported_widget_types = array(
       'image_image',
       'media_generic',
@@ -139,34 +160,16 @@ function representative_image_available_fields($type) {
  * Given a node type, return its representative image field if it exists, NULL
  * otherwise.
  */
-function representative_image_get_field($type) {
-  $field = NULL;
-
-  $fields = variable_get('representative_image_fields', array('node' => array()));
-  if (isset($fields['node'][$type]) && array_key_exists($fields['node'][$type], representative_image_available_fields($type))) {
-    $field = $fields['node'][$type];
-  }
-  return $field;
+function representative_image_get_field($type, $bundle) {
+  $field = variable_get('representative_image_field_' . $type . '_' . $bundle, '');
+  return array_key_exists($field, representative_image_available_fields($type, $bundle)) ? $field : NULL;
 }
 
 /**
  * Set the default field for a given node.
  */
-function representative_image_set_field($type, $field) {
-  $fields = variable_get('representative_image_fields', array('node' => array()));
-  $fields['node'][$type] = $field;
-  variable_set('representative_image_fields', $fields);
-}
-
-/**
- * Like representative_image_get_field, but returns 0 if NULL.
- */
-function _representative_image_get_field_key($type) {
-  $field = representative_image_get_field($type);
-  if ($field === NULL) {
-    return '0';
-  }
-  return $field;
+function representative_image_set_field($type, $bundle, $field) {
+  variable_set('representative_image_field_' . $type . '_' . $bundle, $field);
 }
 
 /**
