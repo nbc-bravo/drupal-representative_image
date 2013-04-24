@@ -1,6 +1,12 @@
 <?php
 
 /**
+ * @file
+ * Allows users to specify a representative image for a content type by choosing
+ * which image field contains the appropriate image.
+ */
+
+/**
  * Implements hook_form_alter().
  */
 function representative_image_form_alter(&$form, &$form_state, $form_id) {
@@ -87,63 +93,67 @@ function representative_image_tokens($type, $tokens, array $data = array(), arra
 }
 
 /**
- * Given a node object, returns a representative image as an absolute URL
+ * Given a node object, returns a representative image as an absolute URL.
  *
- * If anything goes wrong, returns the value of the variable
+ * If anything goes wrong, returns the value of the variable.
  *
  * @param $node
  *   A node object
  *
  * @return
- *   A string with a representative image as a fully formed absolute URL
- *   or an empty string if nothing could be found.
+ *   A string with a representative image as a fully formed absolute URL or an
+ *   empty string if nothing could be found.
  */
 function representative_image($node) {
-  $r = '';
+  $image = '';
+
   if (isset($node->type) && representative_image_get_field($node->type)) {
     $field_items = field_get_items('node', $node, 'field_bandeau_publicitaire');
     if(is_array($field_items) && count($field_items) && isset($field_items[0]['uri'])) {
-      $r = file_create_url($field_items[0]['uri']);
+      $image = file_create_url($field_items[0]['uri']);
     }
   }
-  // if we don't have anything here, try to get the default image
-  // for info on how to set the default image, see the README.txt
-  // file
-  if (!$r) {
+
+  // If we don't have anything here, try to get the default image for info on
+  // how to set the default image, see the README.txt file.
+  // @todo: Is there a better way to handle this?
+  if (!$image) {
     global $base_url;
-    $r = $base_url . '/' . variable_get('representative_image_default', '');
+    $image = $base_url . '/' . variable_get('representative_image_default', '');
   }
-  return $r;
+  return $image;
 }
 
 /**
- * Given a node type machine name, returns available image fields
+ * Given a node type machine name, returns available image fields.
  */
 function representative_image_available_fields($type) {
-  $r = array();
+  $fields = array();
+
   foreach (field_info_instances('node', $type) as $name => $info) {
     if (isset($info['widget']['type']) && $info['widget']['type'] == 'image_image') {
-      $r[$name] = $info['label'] . ' (' . $name . ')';
+      $fields[$name] = $info['label'] . ' (' . $name . ')';
     }
-  } 
-  return $r;
+  }
+  return $fields;
 }
 
 /**
- * Given a node type, return its representative image field if
- * it exists, NULL otherwise.
+ * Given a node type, return its representative image field if it exists, NULL
+ * otherwise.
  */
 function representative_image_get_field($type) {
-  $r = NULL;
+  $field = NULL;
+
   $fields = variable_get('representative_image_fields', array('node' => array()));
   if (isset($fields['node'][$type]) && array_key_exists($fields['node'][$type], representative_image_available_fields($type))) {
-    $r = $fields['node'][$type];
+    $field = $fields['node'][$type];
   }
-  return $r;
+  return $field;
 }
 
 /**
- * Set the default field for a given node
+ * Set the default field for a given node.
  */
 function representative_image_set_field($type, $field) {
   $fields = variable_get('representative_image_fields', array('node' => array()));
@@ -152,24 +162,24 @@ function representative_image_set_field($type, $field) {
 }
 
 /**
- * Like representative_image_get_field, but returns 0 if NULL
+ * Like representative_image_get_field, but returns 0 if NULL.
  */
 function _representative_image_get_field_key($type) {
-  $r = representative_image_get_field($type);
-  if ($r === NULL) {
+  $field = representative_image_get_field($type);
+  if ($field === NULL) {
     return '0';
   }
-  return $r;
+  return $field;
 }
 
 /**
- * Helper function to help you set this up without pointing and clicking
+ * Helper function to help you set this up without pointing and clicking.
  *
- * Install the devel module, go to devel/php
- * and type in dpm(_representative_image_deploy_helper());
- * then copy paste the result in a hook_update_n() function.
- * edit it there, and finally update your database with drush updb
- * or by visiting update.php
+ * Install the devel module, go to devel/php and type in
+ * dpm(_representative_image_deploy_helper()); then copy paste the result in a
+ * hook_update_n() function. Edit it there, and finally update your database
+ * with drush updb or by visiting update.php.
+ * @todo: there must be a better way to handle this.
  */
 function _representative_image_deploy_helper() {
   $node_types = node_type_get_types();
