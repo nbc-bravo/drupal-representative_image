@@ -67,16 +67,14 @@ function representative_image_token_info() {
  */
 function representative_image_tokens($type, $tokens, array $data = array(), array $options = array()) {
   $replacements = array();
-  $sanitize = !empty($options['sanitize']);
+
   if ($type == 'node' && !empty($data['node'])) {
     $node = $data['node'];
 
     foreach ($tokens as $name => $original) {
       switch ($name) {
-        case 'source:representative_image':
+        case 'representative_image':
           $replacements[$original] = representative_image($node);
-          break;
-        default:
           break;
       }
     }
@@ -99,10 +97,12 @@ function representative_image_tokens($type, $tokens, array $data = array(), arra
 function representative_image($node) {
   $image = '';
 
-  if (isset($node->type) && representative_image_get_field($node->type)) {
-    $field_items = field_get_items('node', $node, 'field_bandeau_publicitaire');
-    if(is_array($field_items) && count($field_items) && isset($field_items[0]['uri'])) {
-      $image = file_create_url($field_items[0]['uri']);
+  if (isset($node->type)) {
+    if ($field = representative_image_get_field($node->type)) {
+      $field_items = field_get_items('node', $node, $field);
+      if(is_array($field_items) && count($field_items) && isset($field_items[0]['uri'])) {
+        $r = file_create_url($field_items[0]['uri']);
+      }
     }
   }
 
@@ -123,7 +123,12 @@ function representative_image_available_fields($type) {
   $fields = array();
 
   foreach (field_info_instances('node', $type) as $name => $info) {
-    if (isset($info['widget']['type']) && $info['widget']['type'] == 'image_image') {
+    $supported_widget_types = array(
+      'image_image',
+      'media_generic',
+    );
+
+    if (isset($info['widget']['type']) && in_array($info['widget']['type'], $supported_widget_types)) {
       $fields[$name] = $info['label'] . ' (' . $name . ')';
     }
   }
