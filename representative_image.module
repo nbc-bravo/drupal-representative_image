@@ -44,8 +44,8 @@ function representative_image_form_node_type_form_alter(&$form, &$form_state) {
   }
   else {
     $form['representative_image_fieldset']['#description'] = t('Please define at least one image field for this content type to define a representative image.');
-   }
- }
+  }
+}
 
 /**
  * Submit handler for the node type form.
@@ -89,6 +89,7 @@ function representative_image_tokens($type, $tokens, array $data = array(), arra
       }
     }
   }
+
   return $replacements;
 }
 
@@ -132,18 +133,19 @@ function representative_image($entity, $type) {
     if ($field = representative_image_get_field($type, $bundle)) {
       $field_items = field_get_items($type, $entity, $field);
       if(is_array($field_items) && count($field_items) && isset($field_items[0]['uri'])) {
-        $r = file_create_url($field_items[0]['uri']);
+        $image = file_create_url($field_items[0]['uri']);
       }
     }
   }
 
   // If we don't have anything here, try to get the default image for info on
-  // how to set the default image, see the README.txt file.
+  // how to set the default image, See the README.txt file.
   // @todo: Is there a better way to handle this?
   if (!$image) {
     global $base_url;
     $image = $base_url . '/' . variable_get('representative_image_default', '');
   }
+
   return $image;
 }
 
