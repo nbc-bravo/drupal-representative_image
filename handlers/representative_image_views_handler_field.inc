@@ -55,14 +55,16 @@ class representative_image_views_handler_field extends views_handler_field {
     }
 
     if ($field = representative_image_get_field('node', $node->type)) {
-      $image = field_view_field('node', $node, $field);
-      if (isset($image[0]['#file'])) {
-        $image_file = $image[0]['#file'];
-        $settings = $image = array(
+      $image_field = field_view_field('node', $node, $field);
+      if (isset($image_field[0]['#file'])) {
+        $image = file_load($image_field[0]['#file']->fid);
+        $image_wrapper = entity_metadata_wrapper('file', $image);
+
+        $settings = array(
           'item' => array(
-            'uri' => $image_file->uri,
-            'alt' => $image_file->field_file_image_alt_text,
-            'title' => $image_file->field_file_image_title_text,
+            'uri' => $image->uri,
+            'alt' => $image_wrapper->field_file_image_alt_text->value(),
+            'title' => $image_wrapper->field_file_image_title_text->value(),
           ),
           'image_style' => $this->options['image_style'],
         );
@@ -75,7 +77,7 @@ class representative_image_views_handler_field extends views_handler_field {
             break;
           case 'file':
             $settings['path'] = array(
-              'path' => $image_file->uri,
+              'path' => $image->uri,
             );
             break;
         }
