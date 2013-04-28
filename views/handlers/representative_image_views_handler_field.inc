@@ -49,25 +49,42 @@ class representative_image_views_handler_field extends views_handler_field {
     );
   }
 
-  function render($values, $node = NULL) {
-    if (is_null($node)) {
+  function render($values, $entity = NULL, $type = '') {
+    if (is_null($entity) || empty($type)) {
       return '';
     }
 
-    if ($field = representative_image_get_field('node', $node->type)) {
-      $image_field = field_view_field('node', $node, $field);
-      if (isset($image_field[0]['#file'])) {
-        $image = file_load($image_field[0]['#file']->fid);
+    $bundle = _representative_image_extract_bundle($type, $entity);
+    if ($field = representative_image_get_field($type, $bundle)) {
+      $image_field = field_view_field($type, $entity, $field);
+
+      // Get the fid. Image and Media handle this slightly differently.
+      $fid = '';
+      if (isset($image_field[0]['#file']->fid)) {
+        $fid = $image_field[0]['#file']->fid;
+      }
+      elseif (isset($image_field[0]['#item']['fid'])) {
+        $fid = $image_field[0]['#item']['fid'];
+      }
+
+      if (!empty($fid)) {
+        $image = file_load($fid);
         $image_wrapper = entity_metadata_wrapper('file', $image);
 
         $settings = array(
           'item' => array(
             'uri' => $image->uri,
-            'alt' => $image_wrapper->field_file_image_alt_text->value(),
-            'title' => $image_wrapper->field_file_image_title_text->value(),
           ),
           'image_style' => $this->options['image_style'],
         );
+
+        // Some image fields have alt and title fields available.
+        if (isset($image_wrapper->field_file_image_alt_text)) {
+          $settings['item']['alt'] = $image_wrapper->field_file_image_alt_text->value();
+        }
+        if (isset($image_wrapper->field_file_image_title_text)) {
+          $settings['item']['alt'] = $image_wrapper->field_file_image_title_text->value();
+        }
 
         switch ($this->options['image_link']) {
           case 'content':

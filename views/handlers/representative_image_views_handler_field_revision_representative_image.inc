@@ -16,7 +16,7 @@ class representative_image_views_handler_field_revision_representative_image ext
 
   function render($values) {
     $node = node_load(NULL, $values->vid);
-    $output = parent::render($values, $node);
+    $output = parent::render($values, $node, 'node');
     return $output;
   }
 

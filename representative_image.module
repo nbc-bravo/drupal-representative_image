@@ -7,68 +7,59 @@
  */
 
 /**
+ * Implments hook_menu().
+ */
+function representative_image_menu() {
+  $items['admin/config/media/representative_image'] = array(
+    'title' => 'Representative images',
+    'description' => t('Specify an image field for each entity bundle to use when a single image that represents the entity is required.'),
+    'type' => MENU_NORMAL_ITEM,
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('representative_image_settings_form'),
+    'access arguments' => array('administer content types'),
+    'file' => 'representative_image.admin.inc',
+  );
+
+  return $items;
+}
+
+/**
  * Implements hook_form_alter().
  */
 function representative_image_form_node_type_form_alter(&$form, &$form_state) {
-  if (isset($form['#node_type']->type)) {
-    $bundle = $form['#node_type']->type;
-  }
-  else {
+  if (!isset($form['#node_type']->type)) {
     return;
   }
 
   $type = 'node';
-  $form_state['representative_image'] = array(
-    'entity_type' => $type,
-    'bundle' => $bundle,
-  );
+  $bundle = $form['#node_type']->type;
 
-  $options = representative_image_available_fields($type, $bundle);
-  $form['representative_image_fieldset'] = array(
-    '#type' => 'fieldset',
-    '#collapsible' => TRUE,
-    '#title' => t('Representative image'),
-    '#group' => 'additional_settings',
-    'representative_image' => array(
-      '#type' => 'select',
-      '#options' => $options,
-      '#empty_option' => t('None'),
-      '#empty_value' => 0,
-      '#default_value' => representative_image_get_field($type, $bundle),
-    ),
-  );
+  // Add a responsive image fieldset.
+  form_load_include($form_state, 'inc', 'representative_image', 'representative_image.admin');
+  representative_image_entity_settings_form($form, $form_state, 'node', entity_get_info('node'), array($bundle));
 
-  if (count($options)) {
-    $form['representative_image_fieldset']['#description'] = t('Select a representative image for this node type, which will then be available in a token. See README.txt of the representative_image module for details.');
-    $form['#submit'][] = 'representative_image_content_type_form_submit_handler';
-  }
-  else {
-    $form['representative_image_fieldset']['#description'] = t('Please define at least one image field for this content type to define a representative image.');
-  }
-}
-
-/**
- * Submit handler for the node type form.
- */
-function representative_image_content_type_form_submit_handler($form, &$form_state) {
-  $info = $form_state['representative_image'];
-  if (isset($info['entity_type']) && isset($info['bundle'])) {
-    $field = $form_state['values']['representative_image'];
-    representative_image_set_field($info['entity_type'], $info['bundle'], $field);
-  }
+  // Adjust the fieldset.
+  $form[$type]['#title'] = t('Representative image');
+  $form[$type]['#group'] = 'additional_settings';
 }
 
 /**
  * Implements hook_token_info().
  */
 function representative_image_token_info() {
-  $node['representative_image'] = array(
-    'name' => t('Representative image'),
-    'description' => t('Replaced with an image from a node\'s field as defined in admin/structure/types/manage/my_content_type'),
-  );
+  $tokens = array();
+
+  $entities = entity_get_info();
+  foreach ($entities as $entity_name => $entity) {
+    $info['representative_image'] = array(
+      'name' => t('Representative image'),
+      'description' => t('Replaced with an image from a @name\'s field as defined <a href="@url">here</a>.', array('@name' => $entity_name, '@url' => '/admin/config/media/representative_image')),
+    );
+    $tokens[$entity_name] = $info;
+  }
 
   return array(
-    'tokens' => array('node' => $node),
+    'tokens' => $tokens,
   );
 }
 
@@ -78,14 +69,17 @@ function representative_image_token_info() {
 function representative_image_tokens($type, $tokens, array $data = array(), array $options = array()) {
   $replacements = array();
 
-  if ($type == 'node' && !empty($data['node'])) {
-    $node = $data['node'];
+  $entities = entity_get_info();
+  foreach ($entities as $entity_name => $entity) {
+    if ($type == $entity_name && !empty($data[$entity_name])) {
+      $entity_object = $data[$entity_name];
 
-    foreach ($tokens as $name => $original) {
-      switch ($name) {
-        case 'representative_image':
-          $replacements[$original] = representative_image($node, $type);
-          break;
+      foreach ($tokens as $name => $original) {
+        switch ($name) {
+          case 'representative_image':
+            $replacements[$original] = representative_image($entity_object, $type);
+            break;
+        }
       }
     }
   }
@@ -110,7 +104,7 @@ function representative_image_features_pipe_alter(&$pipe, $data, $export) {
 function representative_image_views_api() {
   return array(
     'api' => 3,
-    'path' => drupal_get_path('module', 'representative_image'),
+    'path' => drupal_get_path('module', 'representative_image') . '/views',
   );
 }
 
@@ -129,7 +123,7 @@ function representative_image_views_api() {
 function representative_image($entity, $type) {
   $image = '';
 
-  if ($bundle = field_extract_bundle($type, $entity)) {
+  if ($bundle = _representative_image_extract_bundle($type, $entity)) {
     if ($field = representative_image_get_field($type, $bundle)) {
       $field_items = field_get_items($type, $entity, $field);
       if(is_array($field_items) && count($field_items) && isset($field_items[0]['uri'])) {
@@ -154,7 +148,6 @@ function representative_image($entity, $type) {
  */
 function representative_image_available_fields($type, $bundle) {
   $fields = array();
-
   foreach (field_info_instances($type, $bundle) as $name => $info) {
     $supported_widget_types = array(
       'image_image',
@@ -165,6 +158,7 @@ function representative_image_available_fields($type, $bundle) {
       $fields[$name] = $info['label'] . ' (' . $name . ')';
     }
   }
+
   return $fields;
 }
 
@@ -182,6 +176,35 @@ function representative_image_get_field($type, $bundle) {
  */
 function representative_image_set_field($type, $bundle, $field) {
   variable_set('representative_image_field_' . $type . '_' . $bundle, $field);
+}
+
+/**
+ * Helper function to more reliably get the bundle of a given entity.
+ *
+ * @param  string $type
+ *   The type of entity to check.
+ *
+ * @param  object $entity
+ *   The entity object whose bundle we need extracted.
+ *
+ * @return string
+ *   If the entity defines a bundle_key, then the explicitly defined bundle name
+ *   is returned, otherwise the entity type is returned.
+ */
+function _representative_image_extract_bundle($type, $entity) {
+  // First try the field_extract_bundle function.
+  $bundle = field_extract_bundle($type, $entity);
+
+  // Next, see if there is an entity key defined for bundles.
+  if (empty($bundle)) {
+    $info = entity_get_info($type);
+    if (isset($info['entity keys']['bundle'])) {
+      $bundle = $entity->{$info['entity keys']['bundle']};
+    }
+  }
+
+  // If all else fails, return the type.
+  return empty($bundle) ? $type : $bundle;
 }
 
 /**

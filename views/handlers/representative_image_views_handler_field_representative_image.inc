@@ -15,8 +15,18 @@ require_once 'representative_image_views_handler_field.inc';
 class representative_image_views_handler_field_representative_image extends representative_image_views_handler_field {
 
   function render($values) {
-    $node = node_load($values->nid);
-    $output = parent::render($values, $node);
+    $output = '';
+
+    // Get the entity type from the views data.
+    $data = views_fetch_data($this->view->base_table);
+    $type = $data['representative_image']['entity_type'];
+
+    // Load the entity and render the field.
+    $entities = entity_load($type, array($values->{$this->view->base_field}));
+    $entity = array_pop($entities);
+
+    $output = is_object($entity) ? parent::render($values, $entity, $type) : '';
+
     return $output;
   }
 
