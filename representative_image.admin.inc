@@ -2,7 +2,7 @@
 
 function representative_image_settings_form($form, &$form_state) {
   $entities = entity_get_info();
-dpm($entities);
+
   $form['entities'] = array(
     '#type' => 'vertical_tabs',
     '#default_tab' => 'edit-node',
