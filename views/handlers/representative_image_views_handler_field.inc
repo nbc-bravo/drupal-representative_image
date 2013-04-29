@@ -11,6 +11,7 @@
  * @ingroup views_field_handlers
  */
 class representative_image_views_handler_field extends views_handler_field {
+
   function query() {
     // Do nothing -- to override the parent query.
   }
@@ -47,6 +48,12 @@ class representative_image_views_handler_field extends views_handler_field {
       '#default_value' => isset($this->options['image_link']) ? $this->options['image_link'] : NULL,
       '#options' => $link_types,
     );
+  }
+
+  function get_value($values, $field = NULL) {
+    if (isset($values->{$field})) {
+      return $values->{$field};
+    }
   }
 
   function render($values, $entity = NULL, $type = '') {

@@ -16,6 +16,7 @@ function representative_image_views_data_alter(&$data) {
         'no group by' => TRUE,
       ),
       'entity_type' => $entity_name,
+      'entity_key' => $entity['entity keys']['id'],
     );
   }
 

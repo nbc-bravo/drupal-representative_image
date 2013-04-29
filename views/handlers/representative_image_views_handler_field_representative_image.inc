@@ -17,15 +17,20 @@ class representative_image_views_handler_field_representative_image extends repr
   function render($values) {
     $output = '';
 
-    // Get the entity type from the views data.
-    $data = views_fetch_data($this->view->base_table);
-    $type = $data['representative_image']['entity_type'];
+    if (empty($this->relationship)) {
+      // Get the entity type from the views data.
+      $data = views_fetch_data($this->table);
+      $type = $data['representative_image']['entity_type'];
+      $key = $data['representative_image']['entity_key'];
 
-    // Load the entity and render the field.
-    $entities = entity_load($type, array($values->{$this->view->base_field}));
-    $entity = array_pop($entities);
-
-    $output = is_object($entity) ? parent::render($values, $entity, $type) : '';
+      // Load the entity and render the field.
+      $entities = entity_load($type, array($this->get_value($values, $key)));
+      $entity = array_pop($entities);
+      $output = is_object($entity) ? parent::render($values, $entity, $type) : '';
+    }
+    else {
+      drupal_set_message(t('Representative image fields do not work when using a relationship. You should remove the %field field from your view.', array('%field' => $this->definition['group'] . ': ' . $this->definition['title'])), 'warning', FALSE);
+    }
 
     return $output;
   }
