@@ -1,0 +1,106 @@
+<?php
+
+/**
+ * @file
+ * Function and unit tests for Representative Image.
+ */
+
+
+class RepresentativeImageTestCase extends DrupalWebTestCase {
+  public static function getInfo() {
+    return array(
+      'name' => 'Representative Image functionality',
+      'description' => 'Test that node types can have associated representative image fields.',
+      'group' => 'Representative Image',
+    );
+  }
+
+  /**
+   * Enable modules and create users with specific permissions.
+   */
+  function setUp() {
+    parent::setUp('representative_image');
+    $this->drupalLogin($this->drupalCreateUser(array('administer nodes', 'administer content types', 'create article content', 'create page content')));
+  }
+
+  /**
+   * Confirm that entities can have representative images.
+   */
+  function testFunctionalTest() {
+    // Add the existing image field (field_image) for Page
+    $edit = array(
+      'fields[_add_existing_field][field_name]' => 'field_image',
+      'fields[_add_existing_field][widget_type]' => 'image_image',
+      'fields[_add_existing_field][label]' => $this->randomName(),
+    );
+    $this->drupalPost('admin/structure/types/manage/page/fields', $edit, 'Save');
+    $this->drupalPost(NULL, array(), 'Save settings');
+
+    // Now add a new field for Page
+    $new_field_label = drupal_strtolower($this->randomName());
+    $edit = array(
+      'fields[_add_new_field][type]' => 'image',
+      'fields[_add_new_field][widget_type]' => 'image_image',
+      'fields[_add_new_field][label]' => $new_field_label,
+      'fields[_add_new_field][field_name]' => $new_field_label,
+    );
+    $this->drupalPost('admin/structure/types/manage/page/fields', $edit, 'Save');
+    $this->drupalPost(NULL, array(), 'Save field settings');
+    $this->drupalPost(NULL, array(), 'Save settings');
+
+    // Make the new field with the random name
+    $edit = array(
+      'representative_image[node][page]' => 'field_' . $new_field_label,
+    );
+    $this->drupalPost('admin/structure/types/manage/page', $edit, 'Save content type');
+
+    // And, for the article, make it field_image
+    $edit = array(
+      'representative_image[node][article]' => 'field_image',
+    );
+    $this->drupalPost('admin/structure/types/manage/article', $edit, 'Save content type');
+
+    // grab some dummy images
+    $images = array();
+    for ($i = 0; $i < 3; $i++) {
+      $images[$i] = $this->randomImage();
+    }
+    // Now create a new Article with a given image
+    $edit = array(
+      'title' => $this->randomName(),
+      'files[field_image_' . LANGUAGE_NONE . '_0]' => drupal_realpath($images[0]->uri),
+    );
+    $this->drupalPost('node/add/article', $edit, t('Save'));
+
+    // Now create a new Page with two images, one per field (this will allow us
+    // to test if the correct image is returned as "representative")
+    $edit = array(
+      'title' => ($article_image = $this->randomName()),
+      'files[field_image_' . LANGUAGE_NONE . '_0]' => drupal_realpath($images[1]->uri),
+      'files[field_' . $new_field_label . '_' . LANGUAGE_NONE . '_0]' => drupal_realpath($images[2]->uri),
+    );
+    $this->drupalPost('node/add/page', $edit, t('Save'));
+
+    $this->assertTrue(representative_image_get_field('node', 'page') == 'field_' . $new_field_label, 'Page\'s representative image is a new image field (even though field_image does exist.');
+    $this->assertTrue(representative_image_get_field('node', 'article') == 'field_image', 'Article\'s representative image is field_image');
+    $this->assertTrue(strpos(representative_image(node_load(1), 'node'), $images[0]->name), 'An actual page returns the expected image as its representative image.');
+    $this->assertTrue(strpos(representative_image(node_load(2), 'node'), $images[2]->name), 'An actual page returns the expected image as its representative image.');
+  }
+
+  /**
+   * Provides a random image object
+   *
+   * @return
+   *   A file object which has the following attributes:
+   *     $file->url (e.g. public://image-2.jpg)
+   *     $file->filename (e.g. image-2.jpg)
+   *     $file->name (e.g. image-2)
+   */
+  function randomImage() {
+    // Get all test images in the form of an array
+    $images = $this->drupalGetTestFiles('image');
+    // Get the next one on the list, wrapping around if necessary
+    static $i = 0;
+    return $images[($i++)%count($images)];
+  }
+}
