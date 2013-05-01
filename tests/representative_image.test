@@ -8,12 +8,17 @@
 /**
  * A base test case for Representative Image
  */
-abstract class RepresentativeImageBaseTest extends DrupalWebTestCase {
+class RepresentativeImageBaseTest extends DrupalWebTestCase {
   /**
    * Enable modules and create users with specific permissions.
    */
   function setUp() {
+debug('About to enable modules');
     parent::setUp('representative_image', 'entity');
+debug('Just enabled modules');
+if (module_exists('representative_image')) {
+  debug('representative image is enabled');
+}
     $this->admin = $this->drupalCreateUser(array('administer nodes', 'administer content types', 'create article content', 'create page content', 'administer users'));
     $this->drupalLogin($this->admin);
   }
