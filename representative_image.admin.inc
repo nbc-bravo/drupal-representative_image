@@ -1,5 +1,13 @@
 <?php
 
+/**
+ * @file
+ * Administrative options for representative_image.
+ */
+
+/**
+ * Callback for administrative settings.
+ */
 function representative_image_settings_form($form, &$form_state) {
   $entities = entity_get_info();
 
@@ -22,7 +30,7 @@ function representative_image_entity_settings_form(&$form, &$form_state, $entity
   // with an image field.
   if (!$entity['fieldable']) {
     $options = array();
-    foreach($bundles as $bundle_name => $bundle) {
+    foreach ($bundles as $bundle_name => $bundle) {
       $options = array_merge($options, representative_image_available_fields($entity_name, $bundle_name));
     }
     if (count($options) == 0) {
@@ -32,14 +40,14 @@ function representative_image_entity_settings_form(&$form, &$form_state, $entity
 
   $form[$entity_name] = array(
     '#type' => 'fieldset',
-    '#title' => $entity['label'],
+    '#title' => check_plain($entity['label']),
     '#description' => t('For each bundle listed below, select an image field to use when an image is needed to represent it'),
     '#collapsed' => TRUE,
     '#collapsible' => TRUE,
     '#group' => 'entities',
   );
 
-  foreach($bundles as $bundle_name => $bundle) {
+  foreach ($bundles as $bundle_name => $bundle) {
     $options = representative_image_available_fields($entity_name, $bundle_name);
 
     // For non-fieldable entities, only display bundles that have at least one
@@ -50,7 +58,7 @@ function representative_image_entity_settings_form(&$form, &$form_state, $entity
 
     $form[$entity_name][$bundle_name] = array(
       '#type' => 'select',
-      '#title' => $bundle['label'],
+      '#title' => check_plain($bundle['label']),
       '#options' => $options,
       '#empty_option' => t('None'),
       '#empty_value' => 0,
@@ -67,6 +75,9 @@ function representative_image_entity_settings_form(&$form, &$form_state, $entity
   $form['#submit'][] = 'representative_image_settings_form_submit';
 }
 
+/**
+ * Submit handler for administrative settings.
+ */
 function representative_image_settings_form_submit($form, &$form_state) {
   $entities = entity_get_info();
   foreach ($entities as $entity_name => $entity) {
@@ -77,5 +88,4 @@ function representative_image_settings_form_submit($form, &$form_state) {
       }
     }
   }
-
 }

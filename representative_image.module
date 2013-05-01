@@ -12,7 +12,7 @@
 function representative_image_menu() {
   $items['admin/config/media/representative_image'] = array(
     'title' => 'Representative images',
-    'description' => t('Specify an image field for each entity bundle to use when a single image that represents the entity is required.'),
+    'description' => 'Specify an image field for each entity bundle to use when a single image that represents the entity is required.',
     'type' => MENU_NORMAL_ITEM,
     'page callback' => 'drupal_get_form',
     'page arguments' => array('representative_image_settings_form'),
@@ -53,7 +53,7 @@ function representative_image_token_info() {
   foreach ($entities as $entity_name => $entity) {
     $info['representative_image'] = array(
       'name' => t('Representative image'),
-      'description' => t('Replaced with an image from a @name\'s field as defined <a href="@url">here</a>.', array('@name' => $entity_name, '@url' => '/admin/config/media/representative_image')),
+      'description' => format_string('Replaced with an image from a @name\'s field as defined !here.', array('@name' => $entity_name, '!here' => l(t('here', '/admin/config/media/representative_image')))),
     );
     $tokens[$entity_name] = $info;
   }
@@ -109,12 +109,16 @@ function representative_image_views_api() {
 }
 
 /**
- * Given a node object, returns a representative image as an absolute URL.
+ * Given an entity and entity type, returns a representative image.
  *
  * If anything goes wrong, returns the value of the variable.
  *
- * @param $node
- *   A node object
+ * @param $entity
+ *   An entity object, for example a node obtained with node_load() or
+ *   a user obtained with user_load().
+ *
+ * @param $type
+ *   An entity type, for example, node or user...
  *
  * @return
  *   A string with a representative image as a fully formed absolute URL or an
@@ -123,10 +127,12 @@ function representative_image_views_api() {
 function representative_image($entity, $type) {
   $image = '';
 
-  if ($bundle = _representative_image_extract_bundle($type, $entity)) {
-    if ($field = representative_image_get_field($type, $bundle)) {
+  $bundle = _representative_image_extract_bundle($type, $entity);
+  if ($bundle) {
+    $field = representative_image_get_field($type, $bundle);
+    if ($field) {
       $field_items = field_get_items($type, $entity, $field);
-      if(is_array($field_items) && count($field_items) && isset($field_items[0]['uri'])) {
+      if (is_array($field_items) && count($field_items) && isset($field_items[0]['uri'])) {
         $image = file_create_url($field_items[0]['uri']);
       }
     }
@@ -164,8 +170,7 @@ function representative_image_available_fields($type, $bundle) {
 }
 
 /**
- * Given a node type, return its representative image field if it exists, NULL
- * otherwise.
+ * Given an entity type and bundle, get its representative image or NULL.
  */
 function representative_image_get_field($type, $bundle) {
   $field = variable_get('representative_image_field_' . $type . '_' . $bundle, '');
@@ -182,10 +187,10 @@ function representative_image_set_field($type, $bundle, $field) {
 /**
  * Helper function to more reliably get the bundle of a given entity.
  *
- * @param  string $type
+ * @param string $type
  *   The type of entity to check.
  *
- * @param  object $entity
+ * @param object $entity
  *   The entity object whose bundle we need extracted.
  *
  * @return string

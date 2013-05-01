@@ -37,7 +37,7 @@ function representative_image_views_data_alter(&$data) {
 function representative_image_views_handlers() {
   return array(
     'info' => array(
-      'path' => drupal_get_path('module', 'representative_image') .'/views/handlers',
+      'path' => drupal_get_path('module', 'representative_image') . '/views/handlers',
     ),
     'handlers' => array(
       'representative_image_views_handler_field' => array(
