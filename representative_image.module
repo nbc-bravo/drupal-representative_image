@@ -148,6 +148,7 @@ function representative_image($entity, $type) {
  */
 function representative_image_available_fields($type, $bundle) {
   $fields = array();
+
   foreach (field_info_instances($type, $bundle) as $name => $info) {
     $supported_widget_types = array(
       'image_image',
@@ -199,7 +200,7 @@ function _representative_image_extract_bundle($type, $entity) {
   if (empty($bundle)) {
     $info = entity_get_info($type);
     if (isset($info['entity keys']['bundle'])) {
-      $bundle = $entity->{$info['entity keys']['bundle']};
+      // $bundle = $entity->{$info['entity keys']['bundle']};
     }
   }
 
