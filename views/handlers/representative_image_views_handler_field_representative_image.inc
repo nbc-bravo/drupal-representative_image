@@ -14,7 +14,7 @@ require_once 'representative_image_views_handler_field.inc';
  */
 class representative_image_views_handler_field_representative_image extends representative_image_views_handler_field {
 
-  function render($values) {
+  function render($values, $entity = NULL, $type = '') {
     $output = '';
 
     if (empty($this->relationship)) {

@@ -14,7 +14,7 @@ require_once 'representative_image_views_handler_field.inc';
  */
 class representative_image_views_handler_field_revision_representative_image extends representative_image_views_handler_field {
 
-  function render($values) {
+  function render($values, $entity = NULL, $type = '') {
     $node = node_load(NULL, $values->vid);
     $output = parent::render($values, $node, 'node');
     return $output;
