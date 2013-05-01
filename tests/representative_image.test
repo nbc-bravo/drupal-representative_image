@@ -13,6 +13,7 @@ class RepresentativeImageBaseTest extends DrupalWebTestCase {
    * Enable modules and create users with specific permissions.
    */
   function setUp() {
+debug('in RepresentativeImageBaseTest setup');
 debug('About to enable modules');
     parent::setUp('representative_image', 'entity');
 debug('Just enabled modules');
@@ -139,6 +140,11 @@ if (module_exists('representative_image')) {
  * Test that entities can have associated representative image fields.
  */
 class RepresentativeImageEntitiesTestCase extends RepresentativeImageBaseTest {
+  function setUp() {
+debug('in RepresentativeImageEntitiesTestCase setup');
+    parent::setUp();
+  }
+
   public static function getInfo() {
     return array(
       'name' => 'Representative Image functionality',
@@ -151,6 +157,7 @@ class RepresentativeImageEntitiesTestCase extends RepresentativeImageBaseTest {
    * Confirm that node entities can have representative images.
    */
   function testNodeTest() {
+debug('in testNodeTest');
     // Add the existing image field (field_image) for Page.
     $edit = array(
       'fields[_add_existing_field][field_name]' => 'field_image',
@@ -194,6 +201,7 @@ class RepresentativeImageEntitiesTestCase extends RepresentativeImageBaseTest {
   }
 
   function testUserTest() {
+debug('in testUserTest');
     // Add an image field to the default user bundle and set it as the
     // representative image.
     $new_field_label = $this->createImageField('admin/config/people/accounts/fields');
