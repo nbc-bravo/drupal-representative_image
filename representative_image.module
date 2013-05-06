@@ -117,21 +117,24 @@ function representative_image_views_api() {
  *   An entity object, for example a node obtained with node_load() or
  *   a user obtained with user_load().
  *
- * @param $type
+ * @param $entity_type
  *   An entity type, for example, node or user...
  *
  * @return
  *   A string with a representative image as a fully formed absolute URL or an
  *   empty string if nothing could be found.
  */
-function representative_image($entity, $type) {
+function representative_image($entity, $entity_type) {
   $image = '';
 
-  $bundle = _representative_image_extract_bundle($type, $entity);
+  $bundle = _representative_image_extract_bundle($entity_type, $entity);
   if ($bundle) {
-    $field = representative_image_get_field($type, $bundle);
+    $field = representative_image_get_field($entity_type, $bundle);
+debug($bundle, 'bundle');
+debug($field, 'fld');
     if ($field) {
-      $field_items = field_get_items($type, $entity, $field);
+      $field_items = field_get_items($entity_type, $entity, $field);
+debug($field_items, 'fld items');
       if (is_array($field_items) && count($field_items) && isset($field_items[0]['uri'])) {
         $image = file_create_url($field_items[0]['uri']);
       }
@@ -152,10 +155,10 @@ function representative_image($entity, $type) {
 /**
  * Given a node type machine name, returns available image fields.
  */
-function representative_image_available_fields($type, $bundle) {
+function representative_image_available_fields($entity_type, $bundle) {
   $fields = array();
 
-  foreach (field_info_instances($type, $bundle) as $name => $info) {
+  foreach (field_info_instances($entity_type, $bundle) as $name => $info) {
     $supported_widget_types = array(
       'image_image',
       'media_generic',
@@ -172,16 +175,16 @@ function representative_image_available_fields($type, $bundle) {
 /**
  * Given an entity type and bundle, get its representative image or NULL.
  */
-function representative_image_get_field($type, $bundle) {
-  $field = variable_get('representative_image_field_' . $type . '_' . $bundle, '');
-  return array_key_exists($field, representative_image_available_fields($type, $bundle)) ? $field : NULL;
+function representative_image_get_field($entity_type, $bundle) {
+  $field = variable_get('representative_image_field_' . $entity_type . '_' . $bundle, '');
+  return array_key_exists($field, representative_image_available_fields($entity_type, $bundle)) ? $field : NULL;
 }
 
 /**
  * Set the default field for a given node.
  */
-function representative_image_set_field($type, $bundle, $field) {
-  variable_set('representative_image_field_' . $type . '_' . $bundle, $field);
+function representative_image_set_field($entity_type, $bundle, $field) {
+  variable_set('representative_image_field_' . $entity_type . '_' . $bundle, $field);
 }
 
 /**
@@ -197,20 +200,20 @@ function representative_image_set_field($type, $bundle, $field) {
  *   If the entity defines a bundle_key, then the explicitly defined bundle name
  *   is returned, otherwise the entity type is returned.
  */
-function _representative_image_extract_bundle($type, $entity) {
+function _representative_image_extract_bundle($entity_type, $entity) {
   // First try the field_extract_bundle function.
-  $bundle = field_extract_bundle($type, $entity);
+  $bundle = field_extract_bundle($entity_type, $entity);
 
-  // Next, see if there is an entity key defined for bundles.
+  // See if there is an entity key defined for bundles.
   if (empty($bundle)) {
-    $info = entity_get_info($type);
-    if (isset($info['entity keys']['bundle'])) {
-      // $bundle = $entity->{$info['entity keys']['bundle']};
+    $info = entity_get_info($entity_type);
+    if (isset($info['entity keys']['bundle']) && isset($entity->{$info['entity keys']['bundle']})) {
+      $bundle = $entity->{$info['entity keys']['bundle']};
     }
   }
 
-  // If all else fails, return the type.
-  return empty($bundle) ? $type : $bundle;
+  // If all else fails, return the entity type.
+  return empty($bundle) ? $entity_type : $bundle;
 }
 
 /**

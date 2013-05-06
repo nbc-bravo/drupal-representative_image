@@ -195,19 +195,63 @@ class RepresentativeImageEntitiesTestCase extends RepresentativeImageBaseTest {
 
   function testUserTest() {
     // Add an image field to the default user bundle and set it as the
-    // representative image.
-    $new_field_label = $this->createImageField('admin/config/people/accounts/fields');
-    $this->setRepresentativeImageField('user', 'user', 'field_' . $new_field_label);
+    // representative image. By running this process twice we test that changing
+    // the representative image field on users works properly.
+    for ($i = 1; $i <= 2; $i++) {
+      // The language cache needs to be reset, otherwise the fields are not
+      // returned properly.
+      drupal_static_reset('field_language');
+      $image = $this->randomImage();
 
-    // Add an image to the admin user.
-    $image = $this->randomImage();
-    $edit = array(
-      'files[field_' . $new_field_label . '_' . LANGUAGE_NONE . '_0]' => drupal_realpath($image->uri),
-    );
+      $new_field_label = $this->createImageField('admin/config/people/accounts/fields');
+      $this->setRepresentativeImageField('user', 'user', 'field_' . $new_field_label);
 
-    $this->drupalPost('user/' . $this->admin->uid . '/edit', $edit, t('Save'));
-    $this->assertRepresentativeImageField('user', 'user', 'field_' . $new_field_label);
-    $this->assertRepresentativeImage(user_load($this->admin->uid), 'user', $image);
+      // Add an image to the admin user.
+      $edit = array(
+        'files[field_' . $new_field_label . '_' . LANGUAGE_NONE . '_0]' => drupal_realpath($image->uri),
+      );
+
+      $this->drupalPost('user/' . $this->admin->uid . '/edit', $edit, t('Save'));
+      $this->assertRepresentativeImageField('user', 'user', 'field_' . $new_field_label);
+      $this->assertRepresentativeImage(user_load($this->admin->uid, TRUE), 'user', $image);
+    }
+  }
+
+  function testCommentTest() {
+    $content_type = 'article';
+
+    // Add an image field to the article comment bundle and set it as the
+    // representative image. By running this process twice we test that changing
+    // the representative image field on comments works properly.
+    for ($i = 1; $i <= 2; $i++) {
+      // The language cache needs to be reset, otherwise the fields are not
+      // returned properly.
+      drupal_static_reset('field_language');
+      $image = $this->randomImage();
+
+      $new_field_label = $this->createImageField('admin/structure/types/manage/' . $content_type . '/comment/fields');
+      $this->setRepresentativeImageField('comment', 'comment_node_' . $content_type, 'field_' . $new_field_label);
+
+      // Add an image to a comment on a node.
+      $node = $this->drupalCreateNode(array('type' => $content_type));
+      $edit = array(
+        'comment_body[' . LANGUAGE_NONE . '][0][value]' => $this->randomString(),
+        'files[field_' . $new_field_label . '_' . LANGUAGE_NONE . '_0]' => drupal_realpath($image->uri),
+      );
+      $this->drupalPost('node/' . $node->nid, $edit, t('Save'));
+
+      $match = array();
+      // Get comment ID
+      preg_match('/#comment-([0-9]+)/', $this->getURL(), $match);
+      $this->assertTrue((!empty($match) && !empty($match[1])), 'Comment id found.');
+      $cid = isset($match[1]) ? $match[1] : '';
+
+      if (!empty($cid)) {
+        $this->assertRepresentativeImageField('comment', 'comment_node_' . $content_type, 'field_' . $new_field_label);
+        $this->assertRepresentativeImage(comment_load($cid, TRUE), 'comment', $image);
+      }
+
+    }
   }
 
 }
