@@ -53,7 +53,7 @@ function representative_image_token_info() {
   foreach ($entities as $entity_name => $entity) {
     $info['representative_image'] = array(
       'name' => t('Representative image'),
-      'description' => format_string('Replaced with an image from a @name\'s field as defined !here.', array('@name' => $entity_name, '!here' => l(t('here', '/admin/config/media/representative_image')))),
+      'description' => format_string('Replaced with an image from a @name\'s field as defined !here.', array('@name' => $entity_name, '!here' => l(t('here'), '/admin/config/media/representative_image'))),
     );
     $tokens[$entity_name] = $info;
   }
