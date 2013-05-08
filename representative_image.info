@@ -7,8 +7,10 @@ configure = admin/config/media/representative_image
 
 dependencies[] = entity
 
+test_dependencies[] = views
+test_dependencies[] = file_entity
+
 files[] = views/handlers/representative_image_views_handler_field.inc
 files[] = views/handlers/representative_image_views_handler_field_representative_image.inc
 files[] = views/handlers/representative_image_views_handler_field_revision_representative_image.inc
-
 files[] = tests/representative_image.test
