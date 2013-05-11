@@ -127,9 +127,10 @@ function representative_image_views_api() {
 function representative_image($entity, $entity_type) {
   $image = '';
 
-  $bundle = _representative_image_extract_bundle($entity_type, $entity);
-  if ($bundle) {
-    $field = representative_image_get_field($entity_type, $bundle);
+  $bundle_name = _representative_image_extract_bundle($entity_type, $entity);
+  if ($bundle_name) {
+    $field = representative_image_get_field($entity_type, $bundle_name);
+
     if ($field) {
       $field_items = field_get_items($entity_type, $entity, $field);
       if (is_array($field_items) && count($field_items) && isset($field_items[0]['uri'])) {
@@ -137,6 +138,11 @@ function representative_image($entity, $entity_type) {
       }
     }
   }
+
+  // Allow other modules to swap in their own representative image. We call a
+  // seperate alter hook per entity type to help improve performance. Most
+  // modules that use this hook will want to treat different types differently.
+  drupal_alter('representative_image_' . $entity_type . '_image', $image, $entity, $bundle_name);
 
   // If we don't have anything here, try to get the default image for info on
   // how to set the default image, See the README.txt file.
@@ -172,9 +178,17 @@ function representative_image_available_fields($entity_type, $bundle) {
 /**
  * Given an entity type and bundle, get its representative image or NULL.
  */
-function representative_image_get_field($entity_type, $bundle) {
-  $field = variable_get('representative_image_field_' . $entity_type . '_' . $bundle, '');
-  return array_key_exists($field, representative_image_available_fields($entity_type, $bundle)) ? $field : NULL;
+function representative_image_get_field($entity_type, $bundle_name, $reset = FALSE) {
+  $fields = &drupal_static(__FUNCTION__);
+  $fields = $reset || is_null($fields) ? array() : $fields;
+
+  if (!array_key_exists($entity_type . '_' . $bundle_name, $fields)) {
+    $field = variable_get('representative_image_field_' . $entity_type . '_' . $bundle_name, '');
+
+    $fields[$entity_type . '_' . $bundle_name] = array_key_exists($field, representative_image_available_fields($entity_type, $bundle_name)) ? $field : NULL;
+  }
+
+  return $fields[$entity_type . '_' . $bundle_name];
 }
 
 /**

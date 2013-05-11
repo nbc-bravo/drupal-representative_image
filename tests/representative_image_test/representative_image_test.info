@@ -1,0 +1,5 @@
+name = Representative image third party integration
+description = Used for testing third party integration to Representative Image.
+group = Testing
+core = 7.x
+hidden = TRUE

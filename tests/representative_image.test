@@ -13,7 +13,12 @@ class RepresentativeImageBaseTest extends DrupalWebTestCase {
    * Enable modules and create users with specific permissions.
    */
   function setUp() {
-    parent::setUp(array('representative_image', 'entity'));
+    $modules = func_get_args();
+    if (isset($modules[0]) && is_array($modules[0])) {
+      $modules = $modules[0];
+    }
+
+    parent::setUp(array_merge(array('representative_image', 'entity'), $modules));
 
     $this->admin = $this->drupalCreateUser(array('administer nodes', 'administer content types', 'create article content', 'create page content', 'administer users'));
     $this->drupalLogin($this->admin);
@@ -129,6 +134,24 @@ class RepresentativeImageBaseTest extends DrupalWebTestCase {
 
     $this->drupalPost('admin/config/media/representative_image', $edit, t('Save configuration'));
   }
+
+  /**
+   * Reset the provided static variables.
+   *
+   * @param  array  $names (optional)
+   *   An array of variable names to be reset. If empty a default set will be
+   *   used.
+   */
+  function resetStaticVariables($names = array()) {
+    if (empty($names)) {
+      $names[] = 'representative_image_get_field';
+      $names[] = 'field_language';
+    }
+
+    foreach ($names as $name) {
+      drupal_static_reset($name);
+    }
+  }
 }
 
 /**
@@ -198,9 +221,8 @@ class RepresentativeImageEntitiesTestCase extends RepresentativeImageBaseTest {
     // representative image. By running this process twice we test that changing
     // the representative image field on users works properly.
     for ($i = 1; $i <= 2; $i++) {
-      // The language cache needs to be reset, otherwise the fields are not
-      // returned properly.
-      drupal_static_reset('field_language');
+      $this->resetStaticVariables();
+
       $image = $this->randomImage();
 
       $new_field_label = $this->createImageField('admin/config/people/accounts/fields');
@@ -224,9 +246,8 @@ class RepresentativeImageEntitiesTestCase extends RepresentativeImageBaseTest {
     // representative image. By running this process twice we test that changing
     // the representative image field on comments works properly.
     for ($i = 1; $i <= 2; $i++) {
-      // The language cache needs to be reset, otherwise the fields are not
-      // returned properly.
-      drupal_static_reset('field_language');
+      $this->resetStaticVariables();
+
       $image = $this->randomImage();
 
       $new_field_label = $this->createImageField('admin/structure/types/manage/' . $content_type . '/comment/fields');
@@ -252,6 +273,33 @@ class RepresentativeImageEntitiesTestCase extends RepresentativeImageBaseTest {
       }
 
     }
+  }
+
+}
+
+/**
+ * Test that third-party modules can alter the representative images.
+ */
+class RepresentativeImageAlterTestCase extends RepresentativeImageBaseTest {
+  function setUp() {
+    parent::setUp(array('representative_image_test'));
+  }
+
+  public static function getInfo() {
+    return array(
+      'name' => 'Representative Image Alter functionality',
+      'description' => 'Test that third-party modules can alter representative images.',
+      'group' => 'Representative Image',
+    );
+  }
+
+  /**
+   * Confirm that node entities can have representative images.
+   */
+  function testAlterTest() {
+    global $base_url;
+    $this->assertTrue(representative_image($this->drupalCreateNode(), 'node') == $base_url . '/page.png', 'It is possible for third party modules to alter the representative image for page.');
+    $this->assertTrue(representative_image($this->drupalCreateNode(array('type' => 'article')), 'node') == $base_url . '/article.png', 'It is possible for third party modules to alter the representative image for article.');
   }
 
 }
