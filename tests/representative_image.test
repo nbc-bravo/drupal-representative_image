@@ -18,9 +18,8 @@ class RepresentativeImageBaseTest extends DrupalWebTestCase {
       $modules = $modules[0];
     }
 
-    parent::setUp(array_merge(array('representative_image', 'entity'), $modules));
-
-    $this->admin = $this->drupalCreateUser(array('administer nodes', 'administer content types', 'create article content', 'create page content', 'administer users'));
+    parent::setUp(array_merge(array('representative_image', 'entity', 'file_entity'), $modules));
+    $this->admin = $this->drupalCreateUser(array('administer site configuration', 'administer nodes', 'administer content types', 'create article content', 'create page content', 'administer users', 'administer files', 'create files', 'edit any files'));
     $this->drupalLogin($this->admin);
   }
 
@@ -73,18 +72,21 @@ class RepresentativeImageBaseTest extends DrupalWebTestCase {
   /**
    * Provides a random image object.
    *
+   * @param string $type
+   *   The type of file to be created for testing purposes.
+   *
    * @return
    *   A file object which has the following attributes:
    *     $file->url (for example, public://image-2.jpg)
    *     $file->filename (for example, image-2.jpg)
    *     $file->name (for example, image-2)
    */
-  function randomImage() {
+  function randomFile($type = 'image') {
     // Get all test images in the form of an array.
-    $images = $this->drupalGetTestFiles('image');
+    $files = $this->drupalGetTestFiles($type);
     // Get the next one on the list, wrapping around if necessary.
     static $i = 0;
-    return $images[($i++)%count($images)];
+    return $files[($i++)%count($files)];
   }
 
   /**
@@ -192,7 +194,7 @@ class RepresentativeImageEntitiesTestCase extends RepresentativeImageBaseTest {
     // Grab some dummy images.
     $images = array();
     for ($i = 0; $i < 3; $i++) {
-      $images[$i] = $this->randomImage();
+      $images[$i] = $this->randomFile('image');
     }
     // Now create a new Article with a given image.
     $edit = array(
@@ -223,7 +225,7 @@ class RepresentativeImageEntitiesTestCase extends RepresentativeImageBaseTest {
     for ($i = 1; $i <= 2; $i++) {
       $this->resetStaticVariables();
 
-      $image = $this->randomImage();
+      $image = $this->randomFile('image');
 
       $new_field_label = $this->createImageField('admin/config/people/accounts/fields');
       $this->setRepresentativeImageField('user', 'user', 'field_' . $new_field_label);
@@ -248,7 +250,7 @@ class RepresentativeImageEntitiesTestCase extends RepresentativeImageBaseTest {
     for ($i = 1; $i <= 2; $i++) {
       $this->resetStaticVariables();
 
-      $image = $this->randomImage();
+      $image = $this->randomFile('image');
 
       $new_field_label = $this->createImageField('admin/structure/types/manage/' . $content_type . '/comment/fields');
       $this->setRepresentativeImageField('comment', 'comment_node_' . $content_type, 'field_' . $new_field_label);
@@ -273,6 +275,49 @@ class RepresentativeImageEntitiesTestCase extends RepresentativeImageBaseTest {
       }
 
     }
+  }
+
+  function testFileTest() {
+    // =========================================================================
+    // Imprtant note: This test assumes file_entity-7.x-2.x-unstable7 or higher.
+    // =========================================================================
+    $file_type = 'document';
+
+    // Add an image field to the file image bundle and set it as the
+    // representative image. The language cache needs to be reset, otherwise the
+    // fields are not returned properly.
+    drupal_static_reset('field_language');
+    $file = $this->randomFile($file_type == 'document' ? 'text' : $file_type);
+    $image = $this->randomFile();
+
+    $new_field_label = $this->createImageField('admin/structure/file-types/manage/' .$file_type  . '/fields');
+    $this->setRepresentativeImageField('file', $file_type, 'field_' . $new_field_label);
+
+    // First create the file entity. Do not confuse this with $file.
+    $edit = array(
+      'files[upload]' => drupal_realpath($file->uri),
+    );
+    $this->drupalPost('file/add', $edit, t('Submit'));
+    $this->clickLink($file->filename);
+
+    $match = array();
+    // Get file ID
+    preg_match('|file/([0-9]+)|', $this->getURL(), $match);
+    $this->assertTrue((!empty($match) && !empty($match[1])), 'File id found.');
+    $fid = isset($match[1]) ? $match[1] : '';
+
+    // Now upload an image to our custom field.
+    $edit = array(
+      'files[field_' . $new_field_label . '_' . LANGUAGE_NONE . '_0]' => drupal_realpath($image->uri),
+    );
+    $this->drupalPost('file/' . $fid . '/edit', $edit, t('Save'));
+
+    // Get the full file entity.
+    $files = entity_load('file', array($fid), array(), TRUE);
+    $file = array_pop($files);
+
+    $this->assertRepresentativeImageField('file', $file_type, 'field_' . $new_field_label);
+    $this->assertRepresentativeImage($file, 'file', $image);
   }
 
 }
