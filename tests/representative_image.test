@@ -19,6 +19,7 @@ class RepresentativeImageBaseTest extends DrupalWebTestCase {
     }
 
     parent::setUp(array_merge(array('representative_image', 'entity', 'file_entity'), $modules));
+
     $this->admin = $this->drupalCreateUser(array('administer site configuration', 'administer nodes', 'administer content types', 'create article content', 'create page content', 'administer users', 'administer files', 'create files', 'edit any files'));
     $this->drupalLogin($this->admin);
   }
@@ -288,7 +289,7 @@ class RepresentativeImageEntitiesTestCase extends RepresentativeImageBaseTest {
     // fields are not returned properly.
     drupal_static_reset('field_language');
     $file = $this->randomFile($file_type == 'document' ? 'text' : $file_type);
-    $image = $this->randomFile();
+    $image = $this->randomFile('image');
 
     $new_field_label = $this->createImageField('admin/structure/file-types/manage/' .$file_type  . '/fields');
     $this->setRepresentativeImageField('file', $file_type, 'field_' . $new_field_label);
@@ -345,6 +346,66 @@ class RepresentativeImageAlterTestCase extends RepresentativeImageBaseTest {
     global $base_url;
     $this->assertTrue(representative_image($this->drupalCreateNode(), 'node') == $base_url . '/page.png', 'It is possible for third party modules to alter the representative image for page.');
     $this->assertTrue(representative_image($this->drupalCreateNode(array('type' => 'article')), 'node') == $base_url . '/article.png', 'It is possible for third party modules to alter the representative image for article.');
+  }
+
+}
+
+/**
+ * Test the views integration.
+ */
+class RepresentativeImageViewsTestCase extends RepresentativeImageBaseTest {
+  function setUp() {
+    parent::setUp(array('representative_image_test', 'views', 'views_ui'));
+
+    views_invalidate_cache();
+  }
+
+  public static function getInfo() {
+    return array(
+      'name' => 'Representative Image Views Integration',
+      'description' => 'Test that views integration of representative images.',
+      'group' => 'Representative Image',
+    );
+  }
+
+  function testViewsIntegration() {
+    // Setup articles to have some image fields and set one to be the
+    // representative image.
+    $new_field_label_1 = $this->createImageField('admin/structure/types/manage/article/fields');
+    $new_field_label_2 = $this->createImageField('admin/structure/types/manage/article/fields');
+    $this->setRepresentativeImageField('node', 'article', 'field_' . $new_field_label_1);
+
+    $count = 3;
+    // Create image files to use for testing.
+    for ($i = 0; $i < $count; $i++) {
+      $image_array_1[] = $this->randomFile('image');
+      $image_array_2[] = $this->randomFile('image');
+    }
+
+    // Create article nodes for testing.
+    for ($i = 0; $i < $count; $i++) {
+      $edit = array(
+        'title' => $this->randomName(),
+        'files[field_' . $new_field_label_1 . '_' . LANGUAGE_NONE . '_0]' => drupal_realpath($image_array_1[$i]->uri),
+        'files[field_' . $new_field_label_2 . '_' . LANGUAGE_NONE . '_0]' => drupal_realpath($image_array_2[$i]->uri),
+      );
+      $this->drupalPost('node/add/article', $edit, t('Save'));
+    }
+
+    // Test that the correct images are being displayed in the test view.
+    $this->drupalGet('representative-image-views-test');
+
+    for ($i = 0; $i < $count; $i++) {
+      $this->assertRaw($image_array_1[$i]->name, 'The correct representative image was displayed in the test view. (' . $i . ')');
+    }
+
+    // Switch the representative image and check that view changes
+    // appropriately.
+    $this->drupalGet('representative-image-views-test');
+    for ($i = 0; $i < $count; $i++) {
+      $this->assertRaw($image_array_2[$i]->name, 'The changed representative image was displayed in the test view. (' . $i . ')s');
+    }
+
   }
 
 }
