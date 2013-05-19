@@ -14,6 +14,9 @@ function representative_image_settings_form($form, &$form_state) {
   $form['entities'] = array(
     '#type' => 'vertical_tabs',
     '#default_tab' => 'edit-node',
+    '#attached' => array(
+      'js' => array(drupal_get_path('module', 'representative_image') . '/js/representative_image.js'),
+    ),
   );
   foreach ($entities as $entity_name => $entity) {
     representative_image_entity_settings_form($form, $form_state, $entity_name, $entity);
@@ -45,6 +48,7 @@ function representative_image_entity_settings_form(&$form, &$form_state, $entity
     '#collapsed' => TRUE,
     '#collapsible' => TRUE,
     '#group' => 'entities',
+    '#attributes' => array('id' => 'representative_image_' . $entity_name),
   );
 
   foreach ($bundles as $bundle_name => $bundle) {

@@ -38,6 +38,9 @@ function representative_image_form_node_type_form_alter(&$form, &$form_state) {
   form_load_include($form_state, 'inc', 'representative_image', 'representative_image.admin');
   representative_image_entity_settings_form($form, $form_state, 'node', entity_get_info('node'), array($bundle));
 
+  // Add handling for the vertical tabs js.
+  $form['#attached']['js'][] = drupal_get_path('module', 'representative_image') . '/js/representative_image.js';
+
   // Adjust the fieldset.
   $form[$type]['#title'] = t('Representative image');
   $form[$type]['#group'] = 'additional_settings';
