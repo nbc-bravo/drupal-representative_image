@@ -78,6 +78,14 @@ class representative_image_views_handler_field extends views_handler_field {
         $image = file_load($fid);
         $image_wrapper = entity_metadata_wrapper('file', $image);
 
+        // When using the media module there is a chance that this image will be
+        // a video, or text file, etc. In that case we return the default render
+        // of that field.
+        if (isset($image->type) && $image->type != 'image') {
+          $image_field['#label_display'] = 'hidden';
+          return drupal_render($image_field);
+        }
+
         $settings = array(
           'item' => array(
             'uri' => $image->uri,
