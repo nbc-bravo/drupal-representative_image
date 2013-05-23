@@ -147,19 +147,62 @@ function representative_image($entity, $entity_type) {
   // modules that use this hook will want to treat different types differently.
   drupal_alter('representative_image_' . $entity_type . '_image', $image, $entity, $bundle_name);
 
-  // If we don't have anything here, try to get the default image for info on
-  // how to set the default image, See the README.txt file.
-  // @todo: Is there a better way to handle this?
-  if (!$image) {
-    global $base_url;
-    $image = $base_url . '/' . variable_get('representative_image_default', '');
+  // If all else fails use a sensible default.
+  if (empty($image)) {
+    $image = representative_image_default($entity, $entity_type, $bundle_name);
   }
 
   return $image;
 }
 
 /**
- * Given a node type machine name, returns available image fields.
+ * Get the default representative image.
+ *
+ * @param $entity_type
+ *   An entity type like "node", can also be NULL, in which case the bundle
+ *   will be ignored and the site default will be returned.
+ *
+ * @param $bundle
+ *   A bundle like "page".
+ */
+function representative_image_default($entity, $entity_type, $bundle = NULL) {
+  global $base_url;
+
+  $method = variable_get('representative_image_default', NULL);
+  switch ($method) {
+    case 'first':
+    case 'first_or_logo':
+      if ($bundle) {
+        $available_fields = representative_image_available_fields($entity_type, $bundle);
+        foreach ($available_fields as $field => $label) {
+          $field_items = field_get_items($entity_type, $entity, $field);
+          if (is_array($field_items) && count($field_items) && isset($field_items[0]['uri'])) {
+            $default = file_create_url($field_items[0]['uri']);
+            break;
+          }
+        }
+      }
+
+      if (!empty($default)) {
+        break;
+      }
+
+    case 'logo':
+    case 'first_or_logo':
+      $default = $base_url . '/' . preg_replace('/^' . str_replace('/', '\/', $base_url) . '\//', '', theme_get_setting('logo'));
+      if (!empty($default)) {
+        break;
+      }
+
+    default:
+      $default = '';
+  }
+
+  return $default;
+}
+
+/**
+ * Given an entity type machine name, returns available image fields.
  */
 function representative_image_available_fields($entity_type, $bundle) {
   $fields = array();

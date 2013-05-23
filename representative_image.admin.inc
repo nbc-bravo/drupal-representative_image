@@ -11,6 +11,19 @@
 function representative_image_settings_form($form, &$form_state) {
   $entities = entity_get_info();
 
+  $form['representative_image_default'] = array(
+    '#type' => 'select',
+    '#title' => t('Default image'),
+    '#description' => t('What should happen if no representative image is found?'),
+    '#default_value' => variable_get('representative_image_default', NULL),
+    '#empty_option' => t('No image'),
+    '#options' => array(
+      'first' => t('Use the first image found on the given entity'),
+      'logo' => t('Use the site logo'),
+      'first_or_logo' => t('Use the first image on the given entity. If no image is found, use the site logo.')
+    ),
+  );
+
   $form['entities'] = array(
     '#type' => 'vertical_tabs',
     '#default_tab' => 'edit-node',

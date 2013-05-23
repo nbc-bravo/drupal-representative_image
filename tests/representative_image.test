@@ -20,7 +20,7 @@ class RepresentativeImageBaseTest extends DrupalWebTestCase {
 
     parent::setUp(array_merge(array('representative_image', 'entity', 'file_entity'), $modules));
 
-    $this->admin = $this->drupalCreateUser(array('administer site configuration', 'administer nodes', 'administer content types', 'create article content', 'create page content', 'administer users', 'administer files', 'create files', 'edit any files'));
+    $this->admin = $this->drupalCreateUser(array('administer site configuration', 'administer nodes', 'administer content types', 'bypass node access', 'administer users', 'administer files', 'create files', 'edit any files'));
     $this->drupalLogin($this->admin);
   }
 
@@ -212,6 +212,20 @@ class RepresentativeImageBaseTest extends DrupalWebTestCase {
   }
 
   /**
+   * Sets the method that should be used to find a representative image when
+   * none is found.
+   *
+   * @param string $method (optional)
+   *   'logo', 'first', 'all'
+   */
+  function setDefaultMethod($method = '') {
+    $edit = array(
+      'representative_image_default' => $method,
+    );
+    $this->drupalPost('admin/config/media/representative_image', $edit, t('Save configuration'));
+  }
+
+  /**
    * Get the id for the given type of entity.
    *
    * @param  $type
@@ -259,6 +273,53 @@ class RepresentativeImageEntitiesTestCase extends RepresentativeImageBaseTest {
       'description' => 'Test that entities can have associated representative image fields.',
       'group' => 'Representative Image',
     );
+  }
+
+  /**
+   * Confirm that the defaults are sensible out of the box.
+   */
+  function testDefaults() {
+    global $base_url;
+
+    // Add some image fields to the article content type.
+    $new_field_label1 = $this->createImageField('admin/structure/types/manage/article/fields');
+
+    // Create a test node with some images.
+    $image0 = $this->randomFile('image');
+    $image1 = $this->randomFile('image');
+    $edit = array(
+      'title' => ($this->randomName()),
+      'files[field_image_' . LANGUAGE_NONE . '_0]' => drupal_realpath($image0->uri),
+      'files[field_' . $new_field_label1 . '_' . LANGUAGE_NONE . '_0]' => drupal_realpath($image1->uri),
+    );
+    $this->drupalPost('node/add/article', $edit, t('Save'));
+    $nid_with_image = $this->getIdFromPath('node');
+
+    // Create a test node without any images.
+    $edit = array(
+      'title' => ($this->randomName()),
+    );
+    $this->drupalPost('node/add/article', $edit, t('Save'));
+    $nid_without_image = $this->getIdFromPath('node');
+
+    // Set default to "logo" and check that it works.
+    $this->setDefaultMethod('logo');
+    $this->assertTrue(representative_image(node_load($nid_with_image, TRUE), 'node') == theme_get_setting('logo'), 'The global default image out of the box is the logo.');
+
+    // Set default to "find" and check that it works.
+    $this->setDefaultMethod('first');
+    $this->assertImage($image0, representative_image(node_load($nid_with_image, TRUE), 'node'), 'The global default image out of the box is the first image from the first image field.');
+
+    // Set default to "first_or_logo" and check that it works. Then edit the
+    // node to give it an image and check again.
+    $this->setDefaultMethod('first_or_logo');
+    $this->assertTrue(representative_image(node_load($nid_without_image, TRUE), 'node') == theme_get_setting('logo'), 'The global default image out of the box is the logo.');
+    $edit = array(
+      'files[field_' . $new_field_label1 . '_' . LANGUAGE_NONE . '_0]' => drupal_realpath($image1->uri),
+    );
+    $this->drupalPost('node/' . $nid_without_image . '/edit', $edit, t('Save'));
+    $this->assertImage($image1, representative_image(node_load($nid_without_image), 'node'), 'The global default image out of the box is the first image from the first image field.');
+
   }
 
   /**
