@@ -25,6 +25,28 @@ class RepresentativeImageBaseTest extends DrupalWebTestCase {
   }
 
   /**
+   * Tear down by making sure all added variables have been removed
+   */
+  function tearDown() {
+    module_disable(array('representative_image'));
+    drupal_uninstall_modules(array('representative_image'));
+
+    // get all variables and make sure none begin with 'representative_image'
+    global $conf;
+
+    $var_exists = FALSE;
+    foreach ($conf as $var => $value) {
+      if (drupal_substr($var, 0, drupal_strlen('representative_image')) == 'representative_image') {
+        $var_exists = TRUE;
+        $this->assert('fail', format_string('The variable @v should not exist after representative_image has been uninstalled (its value is @value).', array('@v' => $var, '@value' => serialize($value))));
+      }
+    }
+    $this->assertFalse($var_exists, 'After uninstalling representative_image, no variables beginning with "representative_image" remain.');
+
+    parent::tearDown();
+  }
+
+  /**
    * Asserts that, given an entity, the expected image is considered the
    * representative image.
    *

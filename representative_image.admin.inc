@@ -35,6 +35,9 @@ function representative_image_settings_form($form, &$form_state) {
     representative_image_entity_settings_form($form, $form_state, $entity_name, $entity);
   }
 
+  // Because we are using system_settings_form() here, the variable
+  // 'representative_image' gets set with an array automatically, even
+  // though it is never used.
   return system_settings_form($form);
 }
 
