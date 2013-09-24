@@ -104,7 +104,7 @@ class representative_image_views_handler_field extends views_handler_field {
         switch ($this->options['image_link']) {
           case 'content':
             $settings['path'] = array(
-              'path' => 'node/' . $node->nid,
+	      'path' => 'node/' . $entity->nid,
             );
             break;
           case 'file':
