@@ -7,7 +7,7 @@
  */
 
 /**
- * Implments hook_menu().
+ * Implements hook_menu().
  */
 function representative_image_menu() {
   $items['admin/config/media/representative_image'] = array(
@@ -112,18 +112,17 @@ function representative_image_views_api() {
 }
 
 /**
- * Given an entity and entity type, returns a representative image.
+ * Given an entity and entity type, returns a representative image. If anything
+ * goes wrong, return the value of the variable.
  *
- * If anything goes wrong, returns the value of the variable.
- *
- * @param $entity
+ * @param object $entity
  *   An entity object, for example a node obtained with node_load() or
  *   a user obtained with user_load().
  *
- * @param $entity_type
+ * @param string $entity_type
  *   An entity type, for example, node or user...
  *
- * @return
+ * @return string
  *   A string with a representative image as a fully formed absolute URL or an
  *   empty string if nothing could be found.
  */
@@ -143,7 +142,7 @@ function representative_image($entity, $entity_type) {
   }
 
   // Allow other modules to swap in their own representative image. We call a
-  // seperate alter hook per entity type to help improve performance. Most
+  // separate alter hook per entity type to help improve performance. Most
   // modules that use this hook will want to treat different types differently.
   drupal_alter('representative_image_' . $entity_type . '_image', $image, $entity, $bundle_name);
 
@@ -158,12 +157,20 @@ function representative_image($entity, $entity_type) {
 /**
  * Get the default representative image.
  *
- * @param $entity_type
+ * @param object $entity
+ *   An entity object, for example a node obtained with node_load() or
+ *   a user obtained with user_load().
+ *
+ * @param string $entity_type
  *   An entity type like "node", can also be NULL, in which case the bundle
  *   will be ignored and the site default will be returned.
  *
- * @param $bundle
+ * @param string $bundle
  *   A bundle like "page".
+ *
+ * @return string
+ *   A string with a representative image as a fully formed absolute URL or an
+ *   empty string if nothing could be found.
  */
 function representative_image_default($entity, $entity_type, $bundle = NULL) {
   global $base_url;
@@ -178,7 +185,7 @@ function representative_image_default($entity, $entity_type, $bundle = NULL) {
           $field_items = field_get_items($entity_type, $entity, $field);
           if (is_array($field_items) && count($field_items) && isset($field_items[0]['uri'])) {
             $default = file_create_url($field_items[0]['uri']);
-	    break 2; // Break from the for and the switch.
+            break 2; // Break from the for and the switch.
           }
         }
       }
@@ -242,7 +249,7 @@ function representative_image_set_field($entity_type, $bundle, $field) {
 /**
  * Helper function to more reliably get the bundle of a given entity.
  *
- * @param string $type
+ * @param string $entity_type
  *   The type of entity to check.
  *
  * @param object $entity
@@ -275,6 +282,7 @@ function _representative_image_extract_bundle($entity_type, $entity) {
  * dpm(_representative_image_deploy_helper()); then copy paste the result in a
  * hook_update_n() function. Edit it there, and finally update your database
  * with drush updb or by visiting update.php.
+ *
  * @todo: there must be a better way to handle this.
  */
 function _representative_image_deploy_helper() {
