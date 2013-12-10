@@ -215,6 +215,9 @@ function representative_image_available_fields($entity_type, $bundle) {
       'media_generic',
     );
 
+    // Allows other modules to specify their own widget types.
+    drupal_alter('representative_image_widget_type', $supported_widget_types);
+
     if (isset($info['widget']['type']) && in_array($info['widget']['type'], $supported_widget_types)) {
       $fields[$name] = $info['label'] . ' (' . $name . ')';
     }

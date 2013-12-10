@@ -63,6 +63,15 @@ class representative_image_views_handler_field extends views_handler_field {
 
     $bundle = _representative_image_extract_bundle($type, $entity);
     if ($field = representative_image_get_field($type, $bundle)) {
+
+      // Allows other modules to rewrite output of the field via
+      // hook_representative_image_views_handler_render.
+      $overriden_field = module_invoke_all('representative_image_views_handler_render', $type, $entity, $field);
+
+      if (!empty($overriden_field)){
+        return render($overriden_field);
+      }
+
       $image_field = field_view_field($type, $entity, $field);
 
       // Get the fid. Image and Media handle this slightly differently.
