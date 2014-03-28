@@ -20,7 +20,7 @@ class RepresentativeImageBaseTest extends DrupalWebTestCase {
 
     parent::setUp(array_merge(array('representative_image', 'entity', 'file_entity'), $modules));
 
-    $this->admin = $this->drupalCreateUser(array('administer site configuration', 'administer nodes', 'administer content types', 'bypass node access', 'administer users', 'administer files', 'create files', 'edit any files'));
+    $this->admin = $this->drupalCreateUser(array('administer site configuration', 'administer nodes', 'administer content types', 'bypass node access', 'administer users', 'administer files', 'create files', 'bypass file access'));
     $this->drupalLogin($this->admin);
   }
 
@@ -433,7 +433,7 @@ class RepresentativeImageEntitiesTestCase extends RepresentativeImageBaseTest {
         'comment_body[' . LANGUAGE_NONE . '][0][value]' => $this->randomString(),
         'files[field_' . $new_field_label . '_' . LANGUAGE_NONE . '_0]' => drupal_realpath($image->uri),
       );
-      $this->drupalPost('node/' . $node->nid, $edit, t('Save'));
+      $this->drupalPost('comment/reply/' . $node->nid, $edit, t('Save'));
       $cid = $this->getIdFromPath('comment');
 
       if (!empty($cid)) {
@@ -464,7 +464,9 @@ class RepresentativeImageEntitiesTestCase extends RepresentativeImageBaseTest {
     $edit = array(
       'files[upload]' => drupal_realpath($file->uri),
     );
-    $this->drupalPost('file/add', $edit, t('Submit'));
+    $this->drupalPost('file/add', $edit, t('Next'));
+    $this->drupalPost(NULL, array('scheme' => 'public'), t('Next'));
+    $this->drupalPost(NULL, array(), t('Save'));
     $this->clickLink($file->filename);
 
     $fid = $this->getIdFromPath('file');
