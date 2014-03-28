@@ -15,9 +15,15 @@ require_once 'representative_image_views_handler_field.inc';
 class representative_image_views_handler_field_revision_representative_image extends representative_image_views_handler_field {
 
   function render($values, $entity = NULL, $type = '') {
-    $node = node_load(NULL, $values->vid);
-    $output = parent::render($values, $node, 'node');
-    return $output;
+    if (isset($values->vid)) {
+      $node = node_load(NULL, $values->vid);
+      $output = parent::render($values, $node, 'node');
+      return $output;
+    }
+    else {
+      drupal_set_message(t('The representative image field will not work properly in a node revision view unless you include the `vid` field.'), 'warning', FALSE);
+      return '';
+    }
   }
 
 }
