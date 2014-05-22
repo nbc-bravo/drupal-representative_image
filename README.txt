@@ -1,6 +1,5 @@
 This module was originally created by Albert Albala (drupal.org/user/245583)
-and is co-maintained by Alexander Ross (drupal.org/user/77375). It is sponsored
-by TP1 in Montreal (tp1.ca).
+and is co-maintained by Alexander Ross (drupal.org/user/77375). The initial version was sponsored by TP1 in Montreal (tp1.ca).
 
 Representative Image allows you to define a field for each entity bundle that
 should be referenced to display an image when a representative image for an
