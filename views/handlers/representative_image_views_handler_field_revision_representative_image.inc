@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Definition of representative_image_views_handler_field_representative_image.
+ * Definition of representative_image_views_handler_field_revision_representative_image.
  */
 
 require_once 'representative_image_views_handler_field.inc';
