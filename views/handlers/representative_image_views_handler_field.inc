@@ -66,10 +66,10 @@ class representative_image_views_handler_field extends views_handler_field {
 
       // Allows other modules to rewrite output of the field via
       // hook_representative_image_views_handler_render.
-      $overriden_field = module_invoke_all('representative_image_views_handler_render', $type, $entity, $field);
+      $overridden_field = module_invoke_all('representative_image_views_handler_render', $type, $entity, $field);
 
-      if (!empty($overriden_field)){
-        return render($overriden_field);
+      if (!empty($overridden_field)){
+        return render($overridden_field);
       }
 
       $image_field = field_view_field($type, $entity, $field);
@@ -113,7 +113,7 @@ class representative_image_views_handler_field extends views_handler_field {
         switch ($this->options['image_link']) {
           case 'content':
             $settings['path'] = array(
-	      'path' => 'node/' . $entity->nid,
+              'path' => 'node/' . $entity->nid,
             );
             break;
           case 'file':
@@ -130,5 +130,4 @@ class representative_image_views_handler_field extends views_handler_field {
       return '';
     }
   }
-
 }
