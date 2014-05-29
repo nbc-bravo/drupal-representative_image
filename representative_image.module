@@ -24,7 +24,7 @@ function representative_image_menu() {
 }
 
 /**
- * Implements hook_form_alter().
+ * Implements hook_form_FORM_ID_alter().
  */
 function representative_image_form_node_type_form_alter(&$form, &$form_state) {
   if (!isset($form['#node_type']->type)) {
@@ -118,7 +118,6 @@ function representative_image_views_api() {
  * @param object $entity
  *   An entity object, for example a node obtained with node_load() or
  *   a user obtained with user_load().
- *
  * @param string $entity_type
  *   An entity type, for example, node or user...
  *
@@ -160,11 +159,9 @@ function representative_image($entity, $entity_type) {
  * @param object $entity
  *   An entity object, for example a node obtained with node_load() or
  *   a user obtained with user_load().
- *
  * @param string $entity_type
  *   An entity type like "node", can also be NULL, in which case the bundle
  *   will be ignored and the site default will be returned.
- *
  * @param string $bundle
  *   A bundle like "page".
  *
@@ -254,7 +251,6 @@ function representative_image_set_field($entity_type, $bundle, $field) {
  *
  * @param string $entity_type
  *   The type of entity to check.
- *
  * @param object $entity
  *   The entity object whose bundle we need extracted.
  *
@@ -281,7 +277,7 @@ function _representative_image_extract_bundle($entity_type, $entity) {
 /**
  * Helper function to help you set this up without pointing and clicking.
  *
- * Install the devel module, go to devel/php and type in
+ * Install the Devel module, go to devel/php and type in
  * dpm(_representative_image_deploy_helper()); then copy paste the result in a
  * hook_update_n() function. Edit it there, and finally update your database
  * with drush updb or by visiting update.php.
@@ -303,6 +299,6 @@ function _representative_image_deploy_helper() {
   }
   $lines[] = '  )));';
   $lines[] = '}';
-  return implode('
-', $lines);
+
+  return implode('', $lines);
 }
