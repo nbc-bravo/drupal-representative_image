@@ -96,9 +96,7 @@ class representative_image_views_handler_field extends views_handler_field {
         }
 
         $settings = array(
-          'item' => array(
-            'uri' => $image->uri,
-          ),
+          'item' => (array) $image,
           'image_style' => $this->options['image_style'],
         );
 
