@@ -47,56 +47,6 @@ function representative_image_form_node_type_form_alter(&$form, &$form_state) {
 }
 
 /**
- * Implements hook_token_info().
- */
-function representative_image_token_info() {
-  $types = $tokens = array();
-
-  $entities = entity_get_info();
-  foreach ($entities as $entity_name => $entity) {
-    $types[$entity_name] = array(
-      'name' => $entity['label'],
-      'description' => t('Tokens for @label entities.', array('@label' => $entity['label'])),
-    );
-    $tokens[$entity_name] = array(
-      'representative_image' => array(
-        'name' => t('Representative image'),
-        'description' => format_string('Replaced with an image from a @name\'s field as defined !here.', array('@name' => $entity_name, '!here' => l(t('here'), '/admin/config/media/representative_image'))),
-      ),
-    );
-  }
-
-  return array(
-    'types' => $types,
-    'tokens' => $tokens,
-  );
-}
-
-/**
- * Implements hook_tokens().
- */
-function representative_image_tokens($type, $tokens, array $data = array(), array $options = array()) {
-  $replacements = array();
-
-  $entities = entity_get_info();
-  foreach ($entities as $entity_name => $entity) {
-    if ($type == $entity_name && !empty($data[$entity_name])) {
-      $entity_object = $data[$entity_name];
-
-      foreach ($tokens as $name => $original) {
-        switch ($name) {
-          case 'representative_image':
-            $replacements[$original] = representative_image($entity_object, $type);
-            break;
-        }
-      }
-    }
-  }
-
-  return $replacements;
-}
-
-/**
  * Implements hook_features_pipe_alter().
  */
 function representative_image_features_pipe_alter(&$pipe, $data, $export) {

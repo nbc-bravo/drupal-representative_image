@@ -629,6 +629,11 @@ class RepresentativeImageTokenTestCase extends RepresentativeImageBaseTest {
     $this->drupalPost('node/add/article', $edit, t('Save'));
     $node = node_load($this->getIdFromPath('node'));
 
+    // Confirm that there is no token replacement when not configured.
+    $replacement = token_replace("foo [node:representative_image] bar", array('node' => $node));
+    $this->assertNoImage($image1, $replacement);
+    $this->assertNoImage($image2, $replacement);
+
     // Confirm that the correct image is being replaced properly.
     $this->setRepresentativeImageField('node', 'article', 'field_' . $new_field_label_1);
     $replacement = token_replace("foo [node:representative_image] bar", array('node' => $node));
