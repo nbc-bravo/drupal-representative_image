@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * Name: representative_image_test.views.inc.
+ */
+
+/**
  * Implements hook_views_default_views().
  */
 function representative_image_test_views_default_views() {

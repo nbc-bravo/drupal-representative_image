@@ -20,7 +20,7 @@ function representative_image_settings_form($form, &$form_state) {
     '#options' => array(
       'first' => t('Use the first image found on the given entity'),
       'logo' => t('Use the site logo'),
-      'first_or_logo' => t('Use the first image on the given entity. If no image is found, use the site logo.')
+      'first_or_logo' => t('Use the first image on the given entity. If no image is found, use the site logo.'),
     ),
   );
 
@@ -41,6 +41,9 @@ function representative_image_settings_form($form, &$form_state) {
   return system_settings_form($form);
 }
 
+/**
+ * Entity settings form.
+ */
 function representative_image_entity_settings_form(&$form, &$form_state, $entity_name, $entity, $specific_bundles = array()) {
   // If necessary, filter out the bundles.
   $bundles = empty($specific_bundles) ? $entity['bundles'] : array_intersect_key($entity['bundles'], array_flip($specific_bundles));

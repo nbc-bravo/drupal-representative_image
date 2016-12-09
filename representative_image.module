@@ -2,6 +2,8 @@
 
 /**
  * @file
+ * Name: representative_image.module.
+ *
  * Allows users to specify a representative image for a content type by choosing
  * which image field contains the appropriate image.
  */
@@ -68,6 +70,8 @@ function representative_image_views_api() {
 }
 
 /**
+ * Get a representative image.
+ *
  * Given an entity and entity type, returns a representative image. If anything
  * goes wrong, return the value of the variable.
  *
@@ -138,12 +142,12 @@ function representative_image_default($entity, $entity_type, $bundle = NULL) {
           $field_items = field_get_items($entity_type, $entity, $field);
           if (is_array($field_items) && count($field_items) && isset($field_items[0]['uri'])) {
             $default = file_create_url($field_items[0]['uri']);
-            break 2; // Break from the for and the switch.
+            // Break from the for and the switch.
+            break 2;
           }
         }
       }
       // Conditional "break" above.
-
     case 'logo':
     case 'first_or_logo':
       $default = $base_url . '/' . preg_replace('/^' . str_replace('/', '\/', $base_url) . '\//', '', theme_get_setting('logo'));

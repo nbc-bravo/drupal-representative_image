@@ -9,14 +9,26 @@
  * A handler to provide proper displays for the representative image.
  *
  * @ingroup views_field_handlers
+ * @codingStandardsIgnoreStart
  */
 class representative_image_views_handler_field extends views_handler_field {
 
-  function query() {
+  /**
+   * Query.
+   *
+   * @codingStandardsIgnoreEnd
+   */
+  public function query() {
     // Do nothing -- to override the parent query.
   }
 
-  function option_definition() {
+  /**
+   * Function to option definition.
+   *
+   * @codingStandardsIgnoreStart
+   */
+  public function option_definition() {
+    // @codingStandardsIgnoreEnd
     $options = parent::option_definition();
 
     $options['image_style'] = array('default' => '');
@@ -25,7 +37,13 @@ class representative_image_views_handler_field extends views_handler_field {
     return $options;
   }
 
-  function options_form(&$form, &$form_state) {
+  /**
+   * Function to options form.
+   *
+   * @codingStandardsIgnoreStart
+   */
+  public function options_form(&$form, &$form_state) {
+    // @codingStandardsIgnoreEnd
     parent::options_form($form, $form_state);
 
     $image_styles = image_style_options(FALSE);
@@ -50,13 +68,22 @@ class representative_image_views_handler_field extends views_handler_field {
     );
   }
 
-  function get_value($values, $field = NULL) {
+  /**
+   * Function to get value.
+   *
+   * @codingStandardsIgnoreStart
+   */
+  public function get_value($values, $field = NULL) {
+    // @codingStandardsIgnoreEnd
     if (isset($values->{$field})) {
       return $values->{$field};
     }
   }
 
-  function render($values, $entity = NULL, $type = '') {
+  /**
+   * Function to Render.
+   */
+  public function render($values, $entity = NULL, $type = '') {
     if (is_null($entity) || empty($type)) {
       return '';
     }
@@ -68,7 +95,7 @@ class representative_image_views_handler_field extends views_handler_field {
       // hook_representative_image_views_handler_render.
       $overridden_field = module_invoke_all('representative_image_views_handler_render', $type, $entity, $field);
 
-      if (!empty($overridden_field)){
+      if (!empty($overridden_field)) {
         return render($overridden_field);
       }
 
@@ -114,6 +141,7 @@ class representative_image_views_handler_field extends views_handler_field {
               'path' => 'node/' . $entity->nid,
             );
             break;
+
           case 'file':
             $settings['path'] = array(
               'path' => $image->uri,
@@ -128,4 +156,5 @@ class representative_image_views_handler_field extends views_handler_field {
       return '';
     }
   }
+
 }

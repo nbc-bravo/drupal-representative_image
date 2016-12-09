@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * Name representative_image.views.inc.
+ */
+
+/**
  * Implements hook_views_data_alter().
  */
 function representative_image_views_data_alter(&$data) {

@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Implement alter hooks for testing purposes
+ * Implement alter hooks for testing purposes.
  */
 
 /**
@@ -21,9 +21,11 @@ function representative_image_test_representative_image_node_image_alter(&$image
         // relevant to your module.
         $image = $base_url . '/article.png';
         break;
+
       case 'page':
         $image = $base_url . '/page.png';
         break;
+
       default:
         break;
     }
