@@ -260,5 +260,5 @@ function _representative_image_deploy_helper() {
   $lines[] = '  )));';
   $lines[] = '}';
 
-  return implode('', $lines);
+  return implode(PHP_EOL, $lines);
 }
