@@ -9,5 +9,11 @@
         "source": "https://cgit.drupalcode.org/representative_image"
     },
     "license": "GPL-2.0+",
-    "minimum-stability": "dev"
+    "minimum-stability": "dev",
+    "require-dev": {
+        "cweagans/composer-patches": "dev-master",
+        "drupal/coder": "^8.2",
+        "phpmd/phpmd": "dev-master",
+        "phpmetrics/phpmetrics": "dev-master"
+    }
 }
