@@ -1,0 +1,8 @@
+<?php
+
+/**
+ * @file
+ * Primary module hooks for Representative Image module.
+ */
+
+// @TODO port 7.x-1.x hooks here.

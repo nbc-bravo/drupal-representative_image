@@ -1,0 +1,7 @@
+representative_image.settings_form:
+  path: '/admin/config/system/representative-image'
+  defaults:
+    _title: 'Representative Image settings'
+    _form: 'Drupal\representative_image\Form\SettingsForm'
+  requirements:
+    _permission: 'administer content types'

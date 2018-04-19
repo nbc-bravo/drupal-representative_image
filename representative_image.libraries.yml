@@ -1,0 +1,5 @@
+content_type_summary:
+  js:
+    js/representative-image.js: {}
+  dependencies:
+    - core/jquery
