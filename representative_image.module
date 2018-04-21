@@ -6,23 +6,6 @@
  */
 
 ///**
-// * Implements hook_menu().
-// */
-//function representative_image_menu() {
-//  $items['admin/config/media/representative_image'] = array(
-//    'title' => 'Representative images',
-//    'description' => 'Specify an image field for each entity bundle to use when a single image that represents the entity is required.',
-//    'type' => MENU_NORMAL_ITEM,
-//    'page callback' => 'drupal_get_form',
-//    'page arguments' => array('representative_image_settings_form'),
-//    'access arguments' => array('administer content types'),
-//    'file' => 'representative_image.admin.inc',
-//  );
-//
-//  return $items;
-//}
-//
-///**
 // * Implements hook_form_alter().
 // */
 //function representative_image_form_node_type_form_alter(&$form, &$form_state) {
