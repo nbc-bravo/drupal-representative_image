@@ -108,7 +108,7 @@ class SettingsForm extends ConfigFormBase {
           '#empty_option' => $this->t('Default behavior'),
           '#empty_value' => '',
           '#parents' => array('representative_image', $entity_type->id(), $bundle_id),
-          '#default_value' => $config->get('entity_overrides.' . $entity_type->id() . '.' . $bundle_id),
+          '#default_value' => $config->get('entity_defaults.' . $entity_type->id() . '.' . $bundle_id),
         );
       }
     }
@@ -121,7 +121,7 @@ class SettingsForm extends ConfigFormBase {
     $values = $form_state->getValues();
     $this->config('representative_image.settings')
       ->set('default_behavior', $values['default_behavior'])
-      ->set('entity_overrides', $values['representative_image'])
+      ->set('entity_defaults', $values['representative_image'])
       ->save();
     parent::submitForm($form, $form_state);
   }

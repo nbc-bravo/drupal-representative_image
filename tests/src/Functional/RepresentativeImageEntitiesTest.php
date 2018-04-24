@@ -13,6 +13,9 @@ class RepresentativeImageEntitiesCase extends RepresentativeImageBaseTest {
    * Confirm that the defaults are sensible out of the box.
    */
   public function testDefaults() {
+    $representative_image_picker = \Drupal::service('representative_image.picker');
+    $node_storage = \Drupal::entityTypeManager()->getStorage('node');
+
     /** @var \Drupal\Core\File\FileSystem $file_system */
     $file_system = \Drupal::service('file_system');
 
@@ -26,12 +29,12 @@ class RepresentativeImageEntitiesCase extends RepresentativeImageBaseTest {
     $image1 = $this->randomFile('image');
     $edit = array(
       'title[0][value]' => $this->randomMachineName(),
-      'files[' . $field_name . '_0]' => \Drupal::service('file_system')
-        ->realpath($image0->uri),
+      'files[' . $field_name . '_0]' => $file_system->realpath($image0->uri),
     );
     $this->drupalPostForm('node/add/article', $edit, 'Save');
     $this->drupalPostForm(NULL, [$field_name . '[0][alt]' => $this->randomMachineName()], t('Save'));
     $nid_with_image = $this->getIdFromPath('node');
+    $node_with_image = $node_storage->load($nid_with_image);
 
     // Create a test node without any images.
     $edit = array(
@@ -39,25 +42,28 @@ class RepresentativeImageEntitiesCase extends RepresentativeImageBaseTest {
     );
     $this->drupalPostForm('node/add/article', $edit, t('Save'));
     $nid_without_image = $this->getIdFromPath('node');
+    $node_without_image = $node_storage->load($nid_without_image);
 
     // Set default to "logo" and check that it works.
     $this->setDefaultMethod('logo');
-    $this->assertTrue(representative_image(node_load($nid_with_image, TRUE), 'node') == theme_get_setting('logo'), 'The global default image out of the box is the logo.');
+    $this->assertEquals($representative_image_picker->getLogoUrl(), $representative_image_picker->from($node_with_image), 'The global default image out of the box is the logo.');
 
     // Set default to "find" and check that it works.
     $this->setDefaultMethod('first');
-    $this->assertImage($image0, representative_image(node_load($nid_with_image, TRUE), 'node'), 'The global default image out of the box is the first image from the first image field.');
+    $this->assertImage($image0, $representative_image_picker->from($node_with_image), 'The global default image out of the box is the first image from the first image field.');
 
     // Set default to "first_or_logo" and check that it works. Then edit the
     // node to give it an image and check again.
     $this->setDefaultMethod('first_or_logo');
-    $this->assertTrue(representative_image(node_load($nid_without_image, TRUE), 'node') == theme_get_setting('logo'), 'The global default image out of the box is the logo.');
+    $this->assertEquals($representative_image_picker->getLogoUrl(), $representative_image_picker->from($node_without_image), 'The global default image out of the box is the logo.');
     $edit = array(
-      'files[field_' . $new_field_label1 . '_0]' => $file_system->realpath($image1->uri),
+      'files[' . $field_name . '_0]' => $file_system->realpath($image1->uri),
     );
     $this->drupalPostForm('node/' . $nid_without_image . '/edit', $edit, t('Save'));
-    $this->assertImage($image1, representative_image(node_load($nid_without_image), 'node'), 'The global default image out of the box is the first image from the first image field.');
-
+    $this->drupalPostForm(NULL, [$field_name . '[0][alt]' => $this->randomMachineName()], t('Save'));
+    $node_storage->resetCache([$nid_without_image]);
+    $node_without_image = $node_storage->load($nid_without_image);
+    $this->assertImage($image1, $representative_image_picker->from($node_without_image), 'The global default image out of the box is the first image from the first image field.');
   }
 
 //  /**

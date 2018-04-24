@@ -5,9 +5,9 @@ representative_image.settings:
     default_behavior:
       type: string
       label: 'Default behavior'
-    entity_overrides:
+    entity_defaults:
       type: sequence
-      label: 'Entity overrides'
+      label: 'Entity defaults'
       sequence:
         type: representative_image.entity_types
         label: 'Entity type'

@@ -114,10 +114,10 @@ class RepresentativeImageBaseTest extends JavascriptTestBase {
     $pattern = '/' . $filename . '(_?[0-9]?\.{1})' . $extension . '/';
 
     if (!empty($haystack)) {
-      $this->assert((bool) preg_match($pattern, $haystack), $message);
+      $this->assertTrue((bool) preg_match($pattern, $haystack), $message);
     }
     else {
-      $this->assertPattern($pattern, $message);
+      $this->assertSession()->responseMatches($pattern);
     }
   }
 
@@ -217,9 +217,9 @@ class RepresentativeImageBaseTest extends JavascriptTestBase {
    */
   public function setDefaultMethod($method = '') {
     $edit = array(
-      'representative_image_default' => $method,
+      'default_behavior' => $method,
     );
-    $this->drupalPost('admin/config/media/representative_image', $edit, t('Save configuration'));
+    $this->drupalPostForm('admin/config/system/representative-image', $edit, t('Save configuration'));
   }
 
   /**
