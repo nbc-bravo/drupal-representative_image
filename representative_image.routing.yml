@@ -1,5 +1,5 @@
 representative_image.settings_form:
-  path: '/admin/config/system/representative-image'
+  path: '/admin/config/media/representative-image'
   defaults:
     _title: 'Representative Image settings'
     _form: 'Drupal\representative_image\Form\SettingsForm'

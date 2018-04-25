@@ -89,7 +89,7 @@ class SettingsForm extends ConfigFormBase {
       $field_definitions = \Drupal::service('entity_field.manager')->getFieldDefinitions($entity_type->id(), $bundle_id);
       foreach ($field_definitions as $field_id => $field_definition) {
         if ($field_definition->getType() == 'image') {
-          $options[$field_id] = $field_definition->label() . ' (' . $field_id . ')';
+          $options[$field_id] = $field_definition->getConfig($bundle_id)->label() . ' (' . $field_id . ')';
         }
       }
       if (empty($options)) {

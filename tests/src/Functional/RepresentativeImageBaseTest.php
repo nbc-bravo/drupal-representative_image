@@ -2,6 +2,8 @@
 
 namespace Drupal\Tests\representative_image\Functional;
 
+use Drupal\field\Entity\FieldConfig;
+use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\FunctionalJavascriptTests\DrupalSelenium2Driver;
 use Drupal\FunctionalJavascriptTests\JavascriptTestBase;
 use Drupal\Tests\image\Kernel\ImageFieldCreationTrait;
@@ -16,6 +18,27 @@ class RepresentativeImageBaseTest extends JavascriptTestBase {
 
   use ImageFieldCreationTrait;
   use TestFileCreationTrait;
+
+  /**
+   * The file system service
+   *
+   * @var \Drupal\Core\File\FileSystem
+   */
+  protected $fileSystem;
+
+  /**
+   * The node storage service.
+   *
+   * @var \Drupal\Core\Entity\EntityStorageInterface
+   */
+  protected $nodeStorage;
+
+  /**
+   * The representative image picker service.
+   *
+   * @var \Drupal\representative_image\RepresentativeImagePicker
+   */
+  protected $representativeImagePicker;
 
   /**
    * {@inheritdoc}
@@ -40,12 +63,18 @@ class RepresentativeImageBaseTest extends JavascriptTestBase {
   public function setUp() {
     parent::setUp();
 
+    $this->fileSystem = \Drupal::service('file_system');
+    $this->nodeStorage = \Drupal::entityTypeManager()->getStorage('node');
+    $this->representativeImagePicker = \Drupal::service('representative_image.picker');
+
     $this->adminUser = $this->drupalCreateUser([
       'administer site configuration',
       'administer nodes',
       'administer content types',
+      'administer node fields',
       'bypass node access',
       'administer users',
+      'administer user fields',
     ]);
     $this->drupalLogin($this->adminUser);
   }
@@ -58,17 +87,12 @@ class RepresentativeImageBaseTest extends JavascriptTestBase {
    *
    * @param object $entity
    *   The entity to test.
-   * @param string $entity_type
-   *   The type of entity being checked.
    * @param object $image
    *   An image object as returned by getTestFiles(image).
    * @param string $message
    *   (optional) The message to display with the test results.
    */
   function assertRepresentativeImage($entity, $entity_type, $image, $message = '') {
-    // @todo: Is there a less brittle assertion here? In theory if a site named
-    // every image "image.jpg" and uploaded it, this test would still pass even
-    // if the wrong image is being displayed.
     $message = empty($message) ? 'The correct representative image was returned' : $message;
     $this->assertTrue(strpos(representative_image($entity, $entity_type), $image->name), $message);
   }
@@ -184,26 +208,7 @@ class RepresentativeImageBaseTest extends JavascriptTestBase {
       'representative_image[' . $entity_type . '][' . $bundle_name . ']' => $field,
     );
 
-    $this->drupalPost('admin/config/media/representative_image', $edit, t('Save configuration'));
-    $this->resetStaticVariables();
-  }
-
-  /**
-   * Reset the provided static variables.
-   *
-   * @param  array  $names
-   *   (optional) An array of variable names to be reset. If empty a default set
-   *   will be used.
-   */
-  public function resetStaticVariables($names = array()) {
-    if (empty($names)) {
-      $names[] = 'representative_image_get_field';
-      $names[] = 'field_language';
-    }
-
-    foreach ($names as $name) {
-      drupal_static_reset($name);
-    }
+    $this->drupalPostForm('admin/config/media/representative-image', $edit, 'Save configuration');
   }
 
   /**
@@ -219,7 +224,7 @@ class RepresentativeImageBaseTest extends JavascriptTestBase {
     $edit = array(
       'default_behavior' => $method,
     );
-    $this->drupalPostForm('admin/config/system/representative-image', $edit, t('Save configuration'));
+    $this->drupalPostForm('admin/config/media/representative-image', $edit, t('Save configuration'));
   }
 
   /**
@@ -252,6 +257,51 @@ class RepresentativeImageBaseTest extends JavascriptTestBase {
     $this->assertTrue(!empty($id), $type . ' id found.');
 
     return $id;
+  }
+
+  /**
+   * Create a new image field for an entity and bundle.
+   *
+   * @param string $entity_type
+   *   The entity type.
+   * @param string $bundle
+   *   The entity bundle.
+   * @param string $field_name
+   *   The name of the new field (all lowercase), exclude the "field_" prefix.
+   */
+  protected function createImageFieldFor($entity_type, $bundle, $field_name) {
+    FieldStorageConfig::create([
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'type' => 'image',
+      'settings' => [],
+      'cardinality' => 1,
+    ])->save();
+
+    $field_config = FieldConfig::create([
+      'field_name' => $field_name,
+      'label' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle,
+      'required' => FALSE,
+      'settings' => [],
+      'description' => '',
+    ]);
+    $field_config->save();
+
+    entity_get_form_display($entity_type, $bundle, 'default')
+      ->setComponent($field_name, [
+        'type' => 'image_image',
+        'settings' => [],
+      ])
+      ->save();
+
+    entity_get_display($entity_type, $bundle, 'default')
+      ->setComponent($field_name, [
+        'type' => 'image',
+        'settings' => [],
+      ])
+      ->save();
   }
 
 }
