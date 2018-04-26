@@ -7,6 +7,80 @@
  * @TODO the following code is pending to port.
  */
 
+use Drupal\Component\Render\FormattableMarkup;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\Core\Url;
+
+/**
+ * Implements hook_token_info().
+ */
+function representative_image_token_info() {
+  $tokens = [];
+
+  $entity_definitions = \Drupal::entityTypeManager()->getDefinitions();
+  foreach ($entity_definitions as $entity_type_id => $entity_type_definition) {
+    $info['representative_image'] = [
+      'name' => new TranslatableMarkup('Representative image'),
+      'description' => new FormattableMarkup('Replaced with an image from a @name\'s field as defined at the <a href=":settings_form">settings form</a>.', [
+        '@name' => $entity_type_definition->getBundleLabel(),
+        ':settings_form' => Url::fromRoute('representative_image.settings_form')->toString(),
+      ]),
+    ];
+    $tokens[$entity_type_id] = $info;
+  }
+
+  return [
+    'tokens' => $tokens,
+  ];
+}
+
+/**
+ * Implements hook_tokens().
+ */
+function representative_image_tokens($type, $tokens, array $data = array(), array $options = array()) {
+  $replacements = array();
+  /** @var \Drupal\representative_image\RepresentativeImagePicker $representative_image_picker */
+  $representative_image_picker = \Drupal::service('representative_image.picker');
+
+  $entity_definitions = \Drupal::entityTypeManager()->getDefinitions();
+  foreach ($entity_definitions as $entity_type_id => $entity_type_definition) {
+    if (($type == $entity_type_id) && !empty($data[$entity_type_id])) {
+      $entity = $data[$entity_type_id];
+
+      foreach ($tokens as $name => $original) {
+        switch ($name) {
+          case 'representative_image':
+            $replacements[$original] = $representative_image_picker->from($entity);
+            break;
+        }
+      }
+    }
+  }
+
+  return $replacements;
+}
+
+///**
+// * Implements hook_features_pipe_alter().
+// */
+//function representative_image_features_pipe_alter(&$pipe, $data, $export) {
+//  if (module_exists('strongarm') && $export['component'] == 'node') {
+//    foreach ($data as $content_type) {
+//      $pipe['variable'][] = 'representative_image_field_node_' . $content_type;
+//    }
+//  }
+//}
+//
+///**
+// * Implements hook_views_api().
+// */
+//function representative_image_views_api() {
+//  return array(
+//    'api' => 3,
+//    'path' => drupal_get_path('module', 'representative_image') . '/views',
+//  );
+//}
+//
 ///**
 // * Implements hook_form_alter().
 // */
@@ -28,70 +102,5 @@
 //  // Adjust the fieldset.
 //  $form[$type]['#title'] = t('Representative image');
 //  $form[$type]['#group'] = 'additional_settings';
-//}
-//
-///**
-// * Implements hook_token_info().
-// */
-//function representative_image_token_info() {
-//  $tokens = array();
-//
-//  $entities = entity_get_info();
-//  foreach ($entities as $entity_name => $entity) {
-//    $info['representative_image'] = array(
-//      'name' => t('Representative image'),
-//      'description' => format_string('Replaced with an image from a @name\'s field as defined !here.', array('@name' => $entity_name, '!here' => l(t('here'), '/admin/config/media/representative_image'))),
-//    );
-//    $tokens[$entity_name] = $info;
-//  }
-//
-//  return array(
-//    'tokens' => $tokens,
-//  );
-//}
-//
-///**
-// * Implements hook_tokens().
-// */
-//function representative_image_tokens($type, $tokens, array $data = array(), array $options = array()) {
-//  $replacements = array();
-//
-//  $entities = entity_get_info();
-//  foreach ($entities as $entity_name => $entity) {
-//    if ($type == $entity_name && !empty($data[$entity_name])) {
-//      $entity_object = $data[$entity_name];
-//
-//      foreach ($tokens as $name => $original) {
-//        switch ($name) {
-//          case 'representative_image':
-//            $replacements[$original] = representative_image($entity_object, $type);
-//            break;
-//        }
-//      }
-//    }
-//  }
-//
-//  return $replacements;
-//}
-//
-///**
-// * Implements hook_features_pipe_alter().
-// */
-//function representative_image_features_pipe_alter(&$pipe, $data, $export) {
-//  if (module_exists('strongarm') && $export['component'] == 'node') {
-//    foreach ($data as $content_type) {
-//      $pipe['variable'][] = 'representative_image_field_node_' . $content_type;
-//    }
-//  }
-//}
-//
-///**
-// * Implements hook_views_api().
-// */
-//function representative_image_views_api() {
-//  return array(
-//    'api' => 3,
-//    'path' => drupal_get_path('module', 'representative_image') . '/views',
-//  );
 //}
 //
