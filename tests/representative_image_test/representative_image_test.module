@@ -29,13 +29,3 @@ function representative_image_test_representative_image_node_image_alter(&$image
     }
   }
 }
-
-/**
- * Implements hook_views_api().
- */
-function representative_image_test_views_api() {
-  return array(
-    'api' => 3,
-    'path' => drupal_get_path('module', 'representative_image_test') . '/views',
-  );
-}

@@ -68,6 +68,7 @@ class RepresentativeImageBaseTest extends JavascriptTestBase {
     $this->representativeImagePicker = \Drupal::service('representative_image.picker');
 
     $this->adminUser = $this->drupalCreateUser([
+      'access content',
       'administer site configuration',
       'administer nodes',
       'administer content types',

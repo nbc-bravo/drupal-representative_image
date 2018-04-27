@@ -60,10 +60,9 @@ class RepresentativeImagePicker {
    *   empty string if nothing could be found.
    */
   public function from(EntityInterface $entity) {
-    $config = $this->configFactory->get('representative_image.settings');
     $image = '';
 
-    $field_name = $config->get('entity_defaults.' . $entity->getEntityTypeId() . '.' . $entity->bundle());
+    $field_name = $this->getFieldFrom($entity);
     // @TODO looks like EntityInterface is not the right parameter type to use in this method.
     if (!empty($field_name) && !$entity->get($field_name)->isEmpty()) {
       $image = file_create_url($entity->get($field_name)->entity->getFileUri());
@@ -80,6 +79,20 @@ class RepresentativeImagePicker {
     }
 
     return $image;
+  }
+
+  /**
+   * Given an entity, extract it's representative image field.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   An entity instance.
+   *
+   * @return string
+   *   The field identifier.
+   */
+  public function getFieldFrom(EntityInterface $entity) {
+    $config = $this->configFactory->get('representative_image.settings');
+    return $config->get('entity_defaults.' . $entity->getEntityTypeId() . '.' . $entity->bundle());
   }
 
   /**
@@ -103,11 +116,11 @@ class RepresentativeImagePicker {
         $field_definitions = \Drupal::service('entity_field.manager')->getFieldDefinitions($entity->getEntityTypeId(), $entity->bundle());
         foreach ($field_definitions as $field_id => $field_definition) {
           if ($field_definition->getType() == 'image') {
-            $available_fields[$field_id] = $field_definition;
+            $available_fields[] = $field_id;
           }
         }
-        if (!$entity->get($field_id)->isEmpty()) {
-          $default = file_create_url($entity->get($field_id)->entity->getFileUri());
+        if (!empty($available_fields) && !$entity->get($available_fields[0])->isEmpty()) {
+          $default = file_create_url($entity->get($available_fields[0])->entity->getFileUri());
           break;
         }
       // Conditional "break" above.

@@ -60,26 +60,6 @@ function representative_image_tokens($type, $tokens, array $data = array(), arra
   return $replacements;
 }
 
-///**
-// * Implements hook_features_pipe_alter().
-// */
-//function representative_image_features_pipe_alter(&$pipe, $data, $export) {
-//  if (module_exists('strongarm') && $export['component'] == 'node') {
-//    foreach ($data as $content_type) {
-//      $pipe['variable'][] = 'representative_image_field_node_' . $content_type;
-//    }
-//  }
-//}
-//
-///**
-// * Implements hook_views_api().
-// */
-//function representative_image_views_api() {
-//  return array(
-//    'api' => 3,
-//    'path' => drupal_get_path('module', 'representative_image') . '/views',
-//  );
-//}
 //
 ///**
 // * Implements hook_form_alter().

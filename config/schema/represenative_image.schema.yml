@@ -22,3 +22,14 @@ representative_image.entity_types:
 representative_image.entity_bundles:
   type: string
   label: 'Entity bundles'
+
+views.field.representative_image:
+  type: views_field
+  label: 'Representative image'
+  mapping:
+    image_style:
+      type: string
+      label: 'Image style'
+    image_link:
+      type: string
+      label: 'Image link'

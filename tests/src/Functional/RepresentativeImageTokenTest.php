@@ -8,7 +8,7 @@ namespace Drupal\Tests\representative_image\Functional;
  *
  * @group representative_image
  */
-class RepresentativeImageTokenTest extends RepresentativeImageBaseTest {
+class RepresentativeImageTokenTest extends RepresbentativeImageBaseTest {
 
   /**
    * {@inheritdoc}

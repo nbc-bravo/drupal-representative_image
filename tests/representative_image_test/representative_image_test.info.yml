@@ -1,0 +1,8 @@
+name: 'Representative Image test'
+type: module
+description: 'Used for testing third party integration to Representative Image.'
+package: Testing
+core: 8.x
+dependencies:
+  - representative_image
+  - views
