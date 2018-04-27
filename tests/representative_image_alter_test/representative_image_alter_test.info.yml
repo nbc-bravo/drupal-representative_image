@@ -1,0 +1,7 @@
+name: Representative Image alter test
+type: module
+description: Tests altering representative images
+package: Testing
+core: 8.x
+dependencies:
+  - representative_image

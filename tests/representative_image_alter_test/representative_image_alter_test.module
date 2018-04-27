@@ -1,0 +1,37 @@
+<?php
+
+/**
+ * @file
+ * Implements alter hooks for testing purposes.
+ */
+
+/**
+ * Implements hook_representative_image_ENTITY_TYPE_image().
+ *
+ * @param string $url
+ *   The image URL.
+ * @param \Drupal\Core\Entity\EntityInterface $entity
+ *   The related entity.
+ */
+function representative_image_alter_test_representative_image_node_image_alter(&$url, \Drupal\Core\Entity\EntityInterface $entity) {
+  global $base_url;
+  if ($entity->getEntityTypeId() != 'node') {
+    return;
+  }
+  switch ($entity->bundle()) {
+    case 'article':
+      // Modules can modify the image for a specific bundle name within
+      // a given entity type. The image article.png does not exist, it is
+      // just for testing purposes. One could imagine, for example, creating
+      // an image here where the title is burned onto the image itself, or
+      // finding a completely different image based on whatever logic is
+      // relevant to your module.
+      $url = $base_url . '/article.png';
+      break;
+    case 'page':
+      $url = $base_url . '/page.png';
+      break;
+    default:
+      break;
+  }
+}
