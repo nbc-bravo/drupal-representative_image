@@ -1,0 +1,8 @@
+name: 'Representative Image Views test'
+type: module
+description: 'Used for testing a view listing various content types sharing a represenative image field.'
+package: Testing
+core: 8.x
+dependencies:
+  - representative_image
+  - views

@@ -62,53 +62,35 @@ class RepresentativeImage extends FieldPluginBase {
    * {@inheritdoc}
    */
   public function render(ResultRow $values) {
-    /** @var \Drupal\representative_image\RepresentativeImagePicker $representative_image_picker */
-    $representative_image_picker = \Drupal::service('representative_image.picker');
     /** @var \Drupal\Core\Entity\EntityInterface $entity */
     $entity = $this->getEntity($values);
-    /** @var \Drupal\Core\Config\ImmutableConfig $config */
-    $config = \Drupal::config('representative_image.settings');
+    /** @var \Drupal\representative_image\RepresentativeImagePicker $representative_image_picker */
+    $representative_image_picker = \Drupal::service('representative_image.picker');
 
-    $representative_field_name = NULL;
-
-    $field_name = $representative_image_picker->getFieldFrom($entity);
-    if (!empty($field_name) && !$entity->get($field_name)->isEmpty()) {
-      $representative_field_name = $field_name;
-    }
-    else {
-      $default_behavior = $config->get('default_behavior');
-      if ($default_behavior != 'first') {
-        return '';
-      }
-      $field_definitions = \Drupal::service('entity_field.manager')
-        ->getFieldDefinitions($entity->getEntityTypeId(), $entity->bundle());
-      foreach ($field_definitions as $field_id => $field_definition) {
-        if (($field_definition->getType() == 'image') && (!$entity->get($field_id)
-            ->isEmpty())) {
-          $representative_field_name = $field_id;
-          break;
-        }
-      }
-      if (empty($representative_field_name)) {
-        return '';
-      }
+    $representative_image_field = $representative_image_picker->getRepresentativeImageField($entity);
+    if (empty($representative_image_field)) {
+      return '';
     }
 
-    $output = [
-      '#theme' => 'image_formatter',
-      '#image_style' => $this->options['image_style'],
-      '#item' => $entity->get($representative_field_name),
-      '#cache' => [
-        'tags' => $config->getCacheTags(),
-      ],
-    ];
+    // Extract the image URL from the field formatter.
+    $view_builder = \Drupal::entityTypeManager()->getViewBuilder($entity->getEntityTypeId());
+    $output = $view_builder->viewField($entity->{$representative_image_field}, 'default');
+
+    if (empty($output['#item'])) {
+      return '';
+    }
+
+    $image_style = $this->options['image_style'];
+    if (!empty($image_style)) {
+      $output['#image_style'] = $image_style;
+    }
 
     $link = $this->options['image_link'];
     if ($link == 'content') {
       $output['#url'] = $entity->toUrl()->toString();
     }
     elseif ($link == 'file') {
-      $output['#url'] = $entity->get($representative_field_name)->entity->url('canonical');
+      $output['#url'] = $entity->get($representative_image_field)->entity->url('canonical');
     }
 
     return $output;

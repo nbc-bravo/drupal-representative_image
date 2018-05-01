@@ -41,6 +41,13 @@ class RepresentativeImageBaseTest extends JavascriptTestBase {
   protected $representativeImagePicker;
 
   /**
+   * The array of the default image file being used by representative_image
+   *
+   * @var array
+   */
+  protected $defaultImageFile;
+
+  /**
    * {@inheritdoc}
    */
   protected $minkDefaultDriverClass = DrupalSelenium2Driver::class;
@@ -48,7 +55,7 @@ class RepresentativeImageBaseTest extends JavascriptTestBase {
   /**
    * {@inheritdoc}
    */
-  public static $modules = ['field_ui', 'file', 'image', 'node', 'representative_image'];
+  public static $modules = ['block', 'field_ui', 'file', 'image', 'node', 'representative_image', 'system', 'user', 'views_ui'];
 
   /**
    * The admin user account.
@@ -69,15 +76,73 @@ class RepresentativeImageBaseTest extends JavascriptTestBase {
 
     $this->adminUser = $this->drupalCreateUser([
       'access content',
+      'access administration pages',
       'administer site configuration',
+      'administer image styles',
       'administer nodes',
+      'administer node display',
       'administer content types',
       'administer node fields',
       'bypass node access',
       'administer users',
       'administer user fields',
+      'administer views',
     ]);
     $this->drupalLogin($this->adminUser);
+    $this->drupalPlaceBlock('local_tasks_block');
+    $this->setUpArticleContentType();
+  }
+
+  /**
+   * Configures the article content type for testing representative image.
+   *
+   * Adds two image fields and a representative image field. Then hides
+   * the image fields from the default display and shows the
+   * representative image field.
+   */
+  protected function setUpArticleContentType() {
+    // Create article content type with two image fields.
+    $this->defaultImageFile = $this->randomFile('image');
+
+    $this->drupalCreateContentType(['type' => 'article', 'name' => 'Article']);
+    $this->createImageField('field_image1', 'article');
+    $this->createImageField('field_image2', 'article');
+
+    // Add representative image field with default image. Set it to field1.
+    $edit = [
+      'new_storage_type' => 'representative_image',
+    ];
+    $this->drupalPostForm('admin/structure/types/manage/article/fields/add-field', $edit, 'Save and continue');
+    $edit = [
+      'label' => 'Representative image',
+      'field_name' => 'representative_image',
+    ];
+    $this->drupalPostForm(NULL, $edit, 'Save and continue');
+    $edit = [
+      'files[settings_default_image_uuid]' => $this->fileSystem->realpath($this->defaultImageFile->uri),
+    ];
+    $this->drupalPostForm(NULL, $edit, 'Save field settings');
+    $this->drupalPostForm(NULL, [], 'Save settings');
+
+    // Adjust display settings so only Representative Image is shown.
+    // Toggle row weight selects as visible.
+    $this->drupalGet('admin/structure/types/manage/article/display');
+    $this->getSession()->getPage()->findButton('Show row weights')->click();
+    $page = $this->getSession()->getPage();
+    $page->findField('fields[field_representative_image][region]')
+      ->setValue('content');
+    $this->assertSession()->assertWaitOnAjaxRequest();
+    $page->findField('fields[field_image1][region]')
+      ->setValue('hidden');
+    $this->assertSession()->assertWaitOnAjaxRequest();
+    $page->findField('fields[field_image2][region]')
+      ->setValue('hidden');
+    $this->assertSession()->assertWaitOnAjaxRequest();
+    $this->getSession()->getPage()->pressButton('Save');
+    $this->assertSession()->assertWaitOnAjaxRequest();
+
+    // @TODO Need to do this or RepresentativeImagePicker::getRepresentativeImageField() will return ''.
+    drupal_flush_all_caches();
   }
 
   /**
@@ -299,6 +364,49 @@ class RepresentativeImageBaseTest extends JavascriptTestBase {
 
     entity_get_display($entity_type, $bundle, 'default')
       ->setComponent($field_name, [
+        'type' => 'image',
+        'settings' => [],
+      ])
+      ->save();
+  }
+
+  /**
+   * Create a representative image field for an entity and bundle.
+   *
+   * @param string $entity_type
+   *   The entity type.
+   * @param string $bundle
+   *   The entity bundle.
+   */
+  protected function createRepresentativeImageFieldFor($entity_type, $bundle) {
+    FieldStorageConfig::create([
+      'field_name' => 'representative_image',
+      'entity_type' => $entity_type,
+      'type' => 'representative_image',
+      'settings' => [],
+      'cardinality' => 1,
+    ])->save();
+
+    $field_config = FieldConfig::create([
+      'field_name' => 'representative_image',
+      'label' => 'Representative image',
+      'entity_type' => $entity_type,
+      'bundle' => $bundle,
+      'required' => FALSE,
+      'settings' => [],
+      'description' => '',
+    ]);
+    $field_config->save();
+
+    entity_get_form_display($entity_type, $bundle, 'default')
+      ->setComponent('representative_image', [
+        'type' => 'image_image',
+        'settings' => [],
+      ])
+      ->save();
+
+    entity_get_display($entity_type, $bundle, 'default')
+      ->setComponent('representative_image', [
         'type' => 'image',
         'settings' => [],
       ])

@@ -33,3 +33,96 @@ views.field.representative_image:
     image_link:
       type: string
       label: 'Image link'
+
+field.storage_settings.representative_image:
+  type: mapping
+  label: Representative Image storage settings
+  mapping:
+    foo:
+      type: string
+      label: Foo
+
+field.field_settings.representative_image:
+  type: mapping
+  label: Representative Image field settings
+  mapping:
+    bar:
+      type: string
+      label: Bar
+
+field.value.representative_image:
+  type: mapping
+  label: Default value
+  mapping:
+    value:
+      type: label
+      label: Value
+
+field.widget.settings.representative_image:
+  type: mapping
+  label: Representative Image widget settings
+  mapping:
+    size:
+      type: integer
+      label: size
+    placeholder:
+      type: string
+      label: Placeholder
+    prefix:
+      type: string
+      label: Prefix
+    suffix:
+      type: string
+      label: Suffix
+
+field.formatter.settings.representative_image:
+  type: mapping
+  label: Representative Image formatter settings
+  mapping:
+    prefix:
+      type: string
+      label: Prefix
+    suffix:
+      type: string
+      label: Suffix
+
+field.widget.settings.representative_image_example:
+  type: mapping
+  label: Example widget settings
+  mapping:
+    size:
+      type: integer
+      label: size
+    placeholder:
+      type: string
+      label: Placeholder
+    prefix:
+      type: string
+      label: Prefix
+    suffix:
+      type: string
+      label: Suffix
+
+field.storage_settings.representative_image_example:
+  type: mapping
+  label: Example storage settings
+  mapping:
+    foo:
+      type: string
+      label: Foo
+
+field.field_settings.representative_image_example:
+  type: mapping
+  label: Example field settings
+  mapping:
+    bar:
+      type: string
+      label: Bar
+
+field.value.representative_image_example:
+  type: mapping
+  label: Default value
+  mapping:
+    value:
+      type: label
+      label: Value

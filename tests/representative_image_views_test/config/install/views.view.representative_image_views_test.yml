@@ -1,8 +1,12 @@
+uuid: 2f07cfd9-5e4e-4417-bead-84e1fb19a0ed
 langcode: en
 status: true
 dependencies:
   config:
-    - node.type.article
+    - field.storage.node.field_rep_image
+    - image.style.medium
+    - node.type.sample_content_type
+    - node.type.sample_content_type_2
   module:
     - node
     - representative_image
@@ -117,14 +121,14 @@ display:
           multi_type: separator
           separator: ', '
           field_api_classes: false
-        representative_image:
-          id: representative_image
-          table: node
-          field: representative_image
+        field_rep_image:
+          id: field_rep_image
+          table: node__field_rep_image
+          field: field_rep_image
           relationship: none
           group_type: group
           admin_label: ''
-          label: ''
+          label: 'Representative image'
           exclude: false
           alter:
             alter_text: false
@@ -165,10 +169,22 @@ display:
           hide_empty: false
           empty_zero: false
           hide_alter_empty: true
-          image_style: ''
-          image_link: ''
-          entity_type: node
-          plugin_id: representative_image
+          click_sort_column: target_id
+          type: representative_image
+          settings:
+            image_style: medium
+            image_link: content
+          group_column: ''
+          group_columns: {  }
+          group_rows: true
+          delta_limit: 0
+          delta_offset: 0
+          delta_reversed: false
+          delta_first_last: false
+          multi_type: separator
+          separator: ', '
+          field_api_classes: false
+          plugin_id: field
       filters:
         status:
           value: '1'
@@ -185,8 +201,40 @@ display:
           id: type
           table: node_field_data
           field: type
+          relationship: none
+          group_type: group
+          admin_label: ''
+          operator: in
           value:
-            article: article
+            sample_content_type: sample_content_type
+            sample_content_type_2: sample_content_type_2
+          group: 1
+          exposed: false
+          expose:
+            operator_id: ''
+            label: ''
+            description: ''
+            use_operator: false
+            operator: ''
+            identifier: ''
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+            reduce: false
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
           entity_type: node
           entity_field: type
           plugin_id: bundle
@@ -221,7 +269,8 @@ display:
         - url.query_args
         - 'user.node_grants:view'
         - user.permissions
-      tags: {  }
+      tags:
+        - 'config:field.storage.node.field_rep_image'
   page_1:
     display_plugin: page
     id: page_1
@@ -238,4 +287,5 @@ display:
         - url.query_args
         - 'user.node_grants:view'
         - user.permissions
-      tags: {  }
+      tags:
+        - 'config:field.storage.node.field_rep_image'
