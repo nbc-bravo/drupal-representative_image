@@ -1,5 +1,0 @@
-representative_image.settings_form:
-  title: 'Representative image'
-  description: 'Specify an image field for each entity bundle to use when a single image that represents the entity is required.'
-  parent: system.admin_config_media
-  route_name: representative_image.settings_form
