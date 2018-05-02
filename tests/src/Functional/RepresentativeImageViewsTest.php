@@ -3,7 +3,7 @@
 namespace Drupal\Tests\representative_image\Functional;
 
 /**
- * Test the views integration of representative images
+ * Test the views integration of representative images.
  *
  * @group representative_image
  */

@@ -34,8 +34,8 @@ function representative_image_token_info() {
 /**
  * Implements hook_tokens().
  */
-function representative_image_tokens($type, $tokens, array $data = array(), array $options = array()) {
-  $replacements = array();
+function representative_image_tokens($type, $tokens, array $data = [], array $options = []) {
+  $replacements = [];
 
   $entity_definitions = \Drupal::entityTypeManager()->getDefinitions();
   $representative_image_picker = \Drupal::service('representative_image.picker');

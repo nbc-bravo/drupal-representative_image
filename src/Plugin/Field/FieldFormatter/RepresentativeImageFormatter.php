@@ -4,8 +4,6 @@ namespace Drupal\representative_image\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Field\FieldItemListInterface;
-use Drupal\Core\Field\FormatterBase;
-use Drupal\Core\Form\FormStateInterface;
 use Drupal\field\FieldConfigInterface;
 use Drupal\image\Plugin\Field\FieldFormatter\ImageFormatter;
 
@@ -82,7 +80,7 @@ class RepresentativeImageFormatter extends ImageFormatter {
    * @param string $langcode
    *   The language code of the referenced entities to display.
    *
-   * @return \Drupal\Core\Field\FieldItemInterface|NULL
+   * @return \Drupal\Core\Field\FieldItemInterface|null
    *   The field item or NULL if not found.
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
@@ -122,9 +120,9 @@ class RepresentativeImageFormatter extends ImageFormatter {
    * Returns the first image field containing an image in the entity.
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
-   *   The entity being viewed
+   *   The entity being viewed.
    *
-   * @return \Drupal\Core\Field\FieldItemInterface|NULL
+   * @return \Drupal\Core\Field\FieldItemInterface|null
    *   The field item or NULL if not found.
    */
   protected function getFirstAvailableImageField(EntityInterface $entity) {

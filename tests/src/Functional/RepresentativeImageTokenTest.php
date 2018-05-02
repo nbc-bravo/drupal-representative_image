@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\representative_image\Functional;
 
-
 /**
  * Test the token integration of representative images.
  *
@@ -24,11 +23,11 @@ class RepresentativeImageTokenTest extends RepresentativeImageBaseTest {
     $image2 = $this->randomFile('image');
 
     // Create an article node for testing.
-    $edit = array(
+    $edit = [
       'title[0][value]' => $this->randomString(),
       'files[field_image1_0]' => $this->fileSystem->realpath($image1->uri),
       'files[field_image2_0]' => $this->fileSystem->realpath($image2->uri),
-    );
+    ];
     $this->drupalPostForm('node/add/article', $edit, t('Save'));
     $this->drupalPostForm(NULL, [
       'field_image1[0][alt]' => $this->randomMachineName(),
