@@ -1,23 +1,38 @@
 [![CircleCI](https://circleci.com/gh/juampynr/representative_image.svg?style=svg)](https://circleci.com/gh/juampynr/representative_image)
 
-This module was originally created by Albert Albala (drupal.org/user/245583)
-and is co-maintained by Alexander Ross (drupal.org/user/77375). It is sponsored
-by TP1 in Montreal (tp1.ca).
-
 Representative Image allows you to define a field for each entity bundle that
 should be referenced to display an image when a representative image for an
 entity is requested.
 
-== EXAMPLE 1 ==
-Imagine you want to setup opengraph metadata to display an image with your
-content, but different content types have different image fields. With this you
-can set all your content types to simply use the representative image field.
+This module has been built to work with any entity type that is fieldable,
+although it has only been tested with node content types.
 
-== EXAMPLE 2 ==
-If you want to create an administrative view of all your content similar
-to the table found at /admin/content you can easily show thumbnail with your
-content by including the representative image field in views.
+# Installation and configuration
 
-===============
-For details and support, please visit:
-http://drupal.org/project/representative_image
+Install the module via the command line or the web interface. Next, add a
+Representative Image field to a content type and adjust the following settings:
+
+![Field settings](docs/images/field_settings.png)
+
+Add the already existing field to other content types and define what image
+field should be used and what to do if it is empty in each of them.
+
+With the above in place, you can:
+
+## 1 Use it in display modes
+
+Select an image style and link type and let the field decide which image to use:
+
+![Display mode](docs/images/display_mode_settings.png)
+
+## 2 Use a token for social networks
+
+The token will transform into the full URL of an image:
+
+![Token support](docs/images/token_example.png)
+
+## 3 Use the field in views
+
+In a view with multiple content types, add the field and select an image style for it:
+
+![Views support](docs/images/views_example.png)
