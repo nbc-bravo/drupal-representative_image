@@ -21,10 +21,7 @@ function representative_image_token_info() {
   foreach ($entity_definitions as $entity_type_id => $entity_type_definition) {
     $info['representative_image'] = [
       'name' => new TranslatableMarkup('Representative image'),
-      'description' => new FormattableMarkup('Replaced with an image from a @name\'s field as defined at the <a href=":settings_form">settings form</a>.', [
-        '@name' => $entity_type_definition->getBundleLabel(),
-        ':settings_form' => Url::fromRoute('representative_image.settings_form')->toString(),
-      ]),
+      'description' => new FormattableMarkup('Replaced by an image selected by the configuration of a Representative Image field.', []),
     ];
     $tokens[$entity_type_id] = $info;
   }
