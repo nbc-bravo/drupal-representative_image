@@ -58,7 +58,10 @@ function representative_image_tokens($type, $tokens, array $data = array(), arra
             // Extract the image URL from the field formatter.
             $view_builder = \Drupal::entityTypeManager()->getViewBuilder($entity_type_id);
             $field_output = $view_builder->viewField($entity->{$representative_image_field}, 'default');
-            $replacements[$original] = $field_output['#item']->entity->url('canonical');
+            if (empty($field_output[0]['#item'])) {
+              break;
+            }
+            $replacements[$original] = $field_output[0]['#item']->entity->url('canonical');
             break;
         }
       }

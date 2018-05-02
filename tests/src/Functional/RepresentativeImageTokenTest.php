@@ -41,6 +41,7 @@ class RepresentativeImageTokenTest extends RepresentativeImageBaseTest {
       'settings[representative_image_field_name]' => 'field_image1',
     ];
     $this->drupalPostForm('admin/structure/types/manage/article/fields/node.article.field_representative_image', $edit, 'Save settings');
+    drupal_flush_all_caches();
 
     // Check that the first image is shown in a processed token.
     $node = $this->nodeStorage->load(1);
@@ -55,8 +56,10 @@ class RepresentativeImageTokenTest extends RepresentativeImageBaseTest {
     $this->drupalPostForm('admin/structure/types/manage/article/fields/node.article.field_representative_image', $edit, 'Save settings');
     // @TODO Need to do this or RepresentativeImagePicker::getRepresentativeImageField() will return ''.
     drupal_flush_all_caches();
+    $this->nodeStorage->resetCache([1]);
 
     // Check that the second image is shown in a processed token.
+    $node = $this->nodeStorage->load(1);
     $replacement = $token->replace("foo [node:representative_image] bar", ['node' => $node]);
     $this->assertTrue(strpos($replacement, $image2->name) !== FALSE);
   }

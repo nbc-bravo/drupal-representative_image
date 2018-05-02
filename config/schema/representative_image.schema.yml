@@ -23,8 +23,8 @@ representative_image.entity_bundles:
   type: string
   label: 'Entity bundles'
 
-views.field.representative_image:
-  type: views_field
+field.formatter.settings.representative_image:
+  type: mapping
   label: 'Representative image'
   mapping:
     image_style:
@@ -34,95 +34,21 @@ views.field.representative_image:
       type: string
       label: 'Image link'
 
-field.storage_settings.representative_image:
-  type: mapping
-  label: Representative Image storage settings
-  mapping:
-    foo:
-      type: string
-      label: Foo
-
 field.field_settings.representative_image:
-  type: mapping
-  label: Representative Image field settings
+  type: field.field_settings.image
+  label: 'Representative Image settings'
   mapping:
-    bar:
+    representative_image_field_name:
       type: string
-      label: Bar
+      label: 'Representative image field name'
+    representative_image_behavior:
+      type: string
+      label: 'Representative image behavior'
 
-field.value.representative_image:
-  type: mapping
-  label: Default value
-  mapping:
-    value:
-      type: label
-      label: Value
+field.storage_settings.representative_image:
+  type: field.storage_settings.image
+  label: 'Representative image settings'
 
 field.widget.settings.representative_image:
-  type: mapping
-  label: Representative Image widget settings
-  mapping:
-    size:
-      type: integer
-      label: size
-    placeholder:
-      type: string
-      label: Placeholder
-    prefix:
-      type: string
-      label: Prefix
-    suffix:
-      type: string
-      label: Suffix
-
-field.formatter.settings.representative_image:
-  type: mapping
-  label: Representative Image formatter settings
-  mapping:
-    prefix:
-      type: string
-      label: Prefix
-    suffix:
-      type: string
-      label: Suffix
-
-field.widget.settings.representative_image_example:
-  type: mapping
-  label: Example widget settings
-  mapping:
-    size:
-      type: integer
-      label: size
-    placeholder:
-      type: string
-      label: Placeholder
-    prefix:
-      type: string
-      label: Prefix
-    suffix:
-      type: string
-      label: Suffix
-
-field.storage_settings.representative_image_example:
-  type: mapping
-  label: Example storage settings
-  mapping:
-    foo:
-      type: string
-      label: Foo
-
-field.field_settings.representative_image_example:
-  type: mapping
-  label: Example field settings
-  mapping:
-    bar:
-      type: string
-      label: Bar
-
-field.value.representative_image_example:
-  type: mapping
-  label: Default value
-  mapping:
-    value:
-      type: label
-      label: Value
+  type: field.widget.settings.image_image
+  label: 'Image field display format settings'
