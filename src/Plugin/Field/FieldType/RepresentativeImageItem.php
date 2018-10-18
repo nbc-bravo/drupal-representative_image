@@ -34,6 +34,7 @@ class RepresentativeImageItem extends ImageItem {
   public function fieldSettingsForm(array $form, FormStateInterface $form_state) {
     $settings = $this->getSettings();
     $entity = $form['#entity'];
+    /** @var \Drupal\representative_image\RepresentativeImagePicker $representative_image_picker */
     $representative_image_picker = \Drupal::service('representative_image.picker');
 
     $options = $representative_image_picker->getSupportedFields($entity->getEntityTypeId(), $entity->bundle());
