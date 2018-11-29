@@ -46,15 +46,15 @@ function representative_image_tokens($type, $tokens, array $data = [], array $op
       foreach ($tokens as $name => $original) {
         switch ($name) {
           case 'representative_image':
-            // Check that this bundle has a representative image field.
-            $representative_image_field = $representative_image_picker->getRepresentativeImageField($entity);
-            if (empty($representative_image_field)) {
+            if (!$representative_image_picker->hasRepresentativeImageField($entity)) {
               break;
             }
 
+            $representative_image_field = $representative_image_picker->getRepresentativeImageField($entity);
+
             // Extract the image URL from the field formatter.
             $view_builder = \Drupal::entityTypeManager()->getViewBuilder($entity_type_id);
-            $field_output = $view_builder->viewField($entity->{$representative_image_field}, 'default');
+            $field_output = $view_builder->viewField($representative_image_field, 'default');
             if (empty($field_output[0]['#item'])) {
               break;
             }
